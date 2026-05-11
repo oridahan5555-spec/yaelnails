@@ -431,7 +431,7 @@ function updateContactLinks() {
 
   whatsAppLink.href = phoneNumber ? `https://wa.me/${phoneNumber}` : "#";
   phoneLink.href = phoneNumber ? `tel:${phoneNumber}` : "#";
-  wazeLink.href = `https://waze.com/ul?q=${encodeURIComponent(state.business.address || "")}`;
+  
 
   instagramLink.classList.toggle("is-hidden", !instagramUrl);
   if (instagramUrl) {
