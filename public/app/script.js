@@ -71,7 +71,7 @@ const businessAddress = document.getElementById("businessAddress");
 const whatsAppLink = document.getElementById("whatsAppLink");
 const phoneLink = document.getElementById("phoneLink");
 const instagramLink = document.getElementById("instagramLink");
-const wazeLink = document.getElementById("wazeLink");
+
 
 const wizardSteps = document.querySelectorAll("[data-step-indicator]");
 const servicesStep = document.getElementById("servicesStep");
