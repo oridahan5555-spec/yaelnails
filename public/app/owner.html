@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yael nails - ניהול העסק</title>
+  <meta name="description" content="עמוד הניהול של בעלת העסק: לוח בקרה, יומן, בקשות תור, שירותים, שעות עבודה ופרטי העסק.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="owner-body">
+  <header class="owner-header">
+    <div class="owner-brand">
+      <strong id="ownerBrandName">Yael nails</strong>
+      <span id="ownerBrandDescription">ניהול העסק</span>
+    </div>
+    <div class="owner-header-actions">
+      <a class="ghost-button" href="index.html">חזרה לאתר</a>
+      <button class="danger-button is-hidden" id="ownerLogoutButton" type="button">התנתקות</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="owner-login-shell" id="ownerLoginGate">
+      <div class="panel-card">
+        <div class="section-head">
+          <h2>כניסה לניהול</h2>
+          <p>זה הדף הנפרד של בעלת העסק. מכאן מנהלים את התורים, השירותים, השעות ופרטי העסק.</p>
+        </div>
+
+        <form id="ownerLoginForm" class="booking-form">
+          <label class="field">
+            <span>שם משתמש</span>
+            <input type="text" name="username" required>
+          </label>
+          <label class="field">
+            <span>סיסמה</span>
+            <input type="password" name="password" required>
+          </label>
+          <button class="primary-button" type="submit">כניסה לניהול</button>
+        </form>
+      </div>
+    </section>
+
+    <div class="owner-layout is-hidden" id="ownerLayout">
+      <aside class="owner-sidebar">
+        <div class="panel-card owner-sidebar-card">
+          <div class="section-head compact-head">
+            <h3>ניהול מהיר</h3>
+            <p>רק הדברים שבאמת עוזרים לעסק כזה.</p>
+          </div>
+          <nav class="owner-nav">
+            <a href="#ownerOverview">לוח בקרה <span>→</span></a>
+            <a href="#ownerCalendarSection">יומן <span>→</span></a>
+            <a href="#ownerBookingsSection">בקשות תור <span>→</span></a>
+            <a href="#ownerServicesSection">שירותים ומחירים <span>→</span></a>
+            <a href="#ownerHoursSection">שעות עבודה <span>→</span></a>
+            <a href="#ownerBusinessSection">פרטי העסק <span>→</span></a>
+            <a href="#ownerAccessSection">כניסה לניהול <span>→</span></a>
+          </nav>
+        </div>
+      </aside>
+
+      <div class="owner-main">
+        <section class="panel-card owner-section-anchor" id="ownerOverview">
+          <div class="section-head">
+            <h2>לוח בקרה</h2>
+            <p>כאן רואים תמונת מצב מהירה: מה מחכה לאישור, מה קורה היום, ואילו דברים באמת דורשים תשומת לב.</p>
+          </div>
+          <div class="owner-stats-grid" id="ownerStatsGrid"></div>
+          <div class="owner-tips-grid" id="ownerTipsGrid"></div>
+        </section>
+
+        <section class="panel-card owner-section-anchor" id="ownerCalendarSection">
+          <div class="section-head">
+            <h2>יומן בעלת העסק</h2>
+            <p>בוחרים יום בלוח ורואים את כל התורים של אותו יום, כולל מצב התור וכפתור מהיר ל-Google Calendar.</p>
+          </div>
+          <div class="seller-calendar">
+            <div class="calendar-card seller-calendar-card">
+              <div class="calendar-head">
+                <button class="icon-button" id="sellerCalendarNextButton" type="button" aria-label="חודש הבא">‹</button>
+                <strong id="sellerCalendarMonthLabel">מאי 2026</strong>
+                <button class="icon-button" id="sellerCalendarPrevButton" type="button" aria-label="חודש קודם">›</button>
+              </div>
+              <div class="calendar-weekdays">
+                <span>א</span>
+                <span>ב</span>
+                <span>ג</span>
+                <span>ד</span>
+                <span>ה</span>
+                <span>ו</span>
+                <span>ש</span>
+              </div>
+              <div class="calendar-grid" id="sellerCalendarGrid"></div>
+            </div>
+            <div class="seller-calendar-list" id="sellerCalendarList"></div>
+          </div>
+        </section>
+
+        <section class="panel-card owner-section-anchor" id="ownerBookingsSection">
+          <div class="section-head">
+            <h2>בקשות תור</h2>
+            <p>כאן מאשרים, דוחים, פותחים ב-Google Calendar, ואם צריך גם מבטלים דחייה לכמה שניות.</p>
+          </div>
+          <div id="sellerBookingsList" class="cards-list"></div>
+        </section>
+
+        <div class="admin-grid">
+          <form id="businessForm" class="admin-card owner-section-anchor" id="ownerBusinessSection">
+            <h3>פרטי העסק</h3>
+            <label class="field">
+              <span>שם העסק</span>
+              <input type="text" name="name" required>
+            </label>
+            <label class="field">
+              <span>תיאור קצר</span>
+              <input type="text" name="description" required>
+            </label>
+            <label class="field">
+              <span>כתובת</span>
+              <input type="text" name="address" required>
+            </label>
+            <label class="field">
+              <span>טלפון</span>
+              <input type="text" name="phone" required>
+            </label>
+            <label class="field">
+              <span>קישור לאינסטגרם</span>
+              <input type="url" name="instagramUrl" placeholder="https://instagram.com/your-page">
+            </label>
+            <button class="primary-button" type="submit">שמירת פרטי עסק</button>
+          </form>
+
+          <form id="sellerCredentialsForm" class="admin-card owner-section-anchor" id="ownerAccessSection">
+            <h3>פרטי כניסה לניהול</h3>
+            <label class="field">
+              <span>שם משתמש</span>
+              <input type="text" name="username" required>
+            </label>
+            <label class="field">
+              <span>סיסמה חדשה</span>
+              <input type="password" name="password" placeholder="אם לא רוצים לשנות, משאירים ריק">
+            </label>
+            <button class="primary-button" type="submit">שמירת פרטי התחברות</button>
+          </form>
+
+          <form id="servicesForm" class="admin-card admin-card-wide owner-section-anchor" id="ownerServicesSection">
+            <h3>שירותים ומחירים</h3>
+            <p class="admin-helper">כאן מעדכנים את רשימת השירותים שהלקוחות רואות במסך הראשון של קביעת התור.</p>
+            <div id="servicesEditor" class="editor-list"></div>
+            <button class="ghost-button" id="addServiceButton" type="button">הוספת שירות</button>
+            <button class="primary-button" type="submit">שמירת שירותים</button>
+          </form>
+
+          <form id="hoursForm" class="admin-card admin-card-wide owner-section-anchor" id="ownerHoursSection">
+            <h3>ימים ושעות עבודה</h3>
+            <p class="admin-helper">
+              לכל יום יש שעת פתיחה, שעת סגירה ומרווח בין תורים. אם כתוב 30, זה אומר שאפשר להתחיל תור חדש כל 30 דקות.
+            </p>
+            <div id="hoursEditor" class="editor-list"></div>
+            <button class="primary-button" type="submit">שמירת שעות עבודה</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="owner.js"></script>
+</body>
+</html>
