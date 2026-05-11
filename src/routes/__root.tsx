@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Yael Nails - יעל ניילס" },
+      { name: "description", content: "לק ג'ל בעיצובים אישיים וטיפוח מושלם לכף היד. בואי להתחדש במראה ציפורניים נקי, חזק ומחמיא. קביעת תורים וגלריית עבודות באתר." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Yael Nails - יעל ניילס" },
+      { property: "og:description", content: "לק ג'ל בעיצובים אישיים וטיפוח מושלם לכף היד. בואי להתחדש במראה ציפורניים נקי, חזק ומחמיא. קביעת תורים וגלריית עבודות באתר." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Yael Nails - יעל ניילס" },
+      { name: "twitter:description", content: "לק ג'ל בעיצובים אישיים וטיפוח מושלם לכף היד. בואי להתחדש במראה ציפורניים נקי, חזק ומחמיא. קביעת תורים וגלריית עבודות באתר." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b1f4c3ab-c0a4-48bb-80d9-fdcc9277abf6/id-preview-83212aa8--c0d04ca8-996f-49d2-942d-bc32726a8910.lovable.app-1778521120111.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b1f4c3ab-c0a4-48bb-80d9-fdcc9277abf6/id-preview-83212aa8--c0d04ca8-996f-49d2-942d-bc32726a8910.lovable.app-1778521120111.png" },
     ],
     links: [
       {
