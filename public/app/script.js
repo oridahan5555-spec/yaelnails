@@ -94,6 +94,7 @@ const detailsNotice = document.getElementById("detailsNotice");
 const bookingSuccessPanel = document.getElementById("bookingSuccessPanel");
 const bookingSuccessSummary = document.getElementById("bookingSuccessSummary");
 const bookingSuccessCalendarButton = document.getElementById("bookingSuccessCalendarButton");
+const bookingSuccessIcsButton = document.getElementById("bookingSuccessIcsButton");
 const bookingForm = document.getElementById("bookingForm");
 const customerBookingsPanel = document.getElementById("customerBookingsPanel");
 const myBookingsList = document.getElementById("myBookingsList");
@@ -342,6 +343,52 @@ function openGoogleCalendarForBooking(booking) {
   }
 }
 
+function buildIcsForBooking(booking) {
+  const businessTitle = String(state.business.name || DEFAULT_DATA.business.name).trim() || DEFAULT_DATA.business.name;
+  const customerName = [booking.customer_first_name, booking.customer_last_name].filter(Boolean).join(" ").trim();
+  const descriptionLines = [
+    `שירות: ${booking.service_name}`,
+    `סטטוס: ${formatStatus(booking.status)}`,
+    customerName ? `לקוחה: ${customerName}` : "",
+    booking.customer_phone ? `טלפון: ${booking.customer_phone}` : "",
+    booking.notes ? `הערות: ${booking.notes}` : ""
+  ].filter(Boolean).join("\\n");
+  const dtStart = formatIcsDateTime(booking.booking_date, booking.booking_time);
+  const dtEnd = formatIcsDateTime(booking.booking_date, getBookingEndTime(booking));
+  const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const uid = `booking-${booking.id}@yaelnails`;
+  const escapeText = (s) => String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//YaelNails//Booking//HE",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${escapeText(`${businessTitle} - ${booking.service_name}`)}`,
+    `DESCRIPTION:${escapeText(descriptionLines)}`,
+    `LOCATION:${escapeText(state.business.address || "")}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+}
+
+function downloadIcsForBooking(booking) {
+  if (!booking) return;
+  const ics = buildIcsForBooking(booking);
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `appointment-${booking.booking_date}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function findBookingById(bookingId) {
   return state.bookings.find((booking) => booking.id === bookingId) || null;
 }
@@ -410,7 +457,9 @@ function hideBookingSuccess() {
   bookingSuccessPanel.classList.add("is-hidden");
   bookingSuccessSummary.innerHTML = "";
   bookingSuccessCalendarButton.classList.add("is-hidden");
+  bookingSuccessIcsButton.classList.add("is-hidden");
   delete bookingSuccessCalendarButton.dataset.bookingId;
+  delete bookingSuccessIcsButton.dataset.bookingId;
 }
 
 function showBookingSuccess(booking) {
@@ -422,6 +471,8 @@ function showBookingSuccess(booking) {
   `;
   bookingSuccessCalendarButton.dataset.bookingId = booking.id;
   bookingSuccessCalendarButton.classList.remove("is-hidden");
+  bookingSuccessIcsButton.dataset.bookingId = booking.id;
+  bookingSuccessIcsButton.classList.remove("is-hidden");
   bookingSuccessPanel.classList.remove("is-hidden");
 }
 
@@ -813,6 +864,7 @@ function renderCustomerBookings() {
             ? `
               <div class="booking-card-actions">
                 <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
                 <button class="danger-button cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
               </div>
             `
@@ -883,6 +935,7 @@ function renderSellerCalendar() {
             ? `
               <div class="booking-card-actions">
                 <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
               </div>
             `
             : ""
@@ -920,12 +973,14 @@ function renderSellerBookings() {
                 <button class="primary-button approve-booking-button" type="button" data-booking-id="${booking.id}">אישור תור</button>
                 <button class="danger-button reject-booking-button" type="button" data-booking-id="${booking.id}">דחיית תור</button>
                 <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
               </div>
             `
             : ["approved"].includes(booking.status)
               ? `
                 <div class="seller-actions">
                   <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
                 </div>
               `
               : ""
@@ -1117,6 +1172,11 @@ logoutButton.addEventListener("click", () => {
 bookingSuccessCalendarButton.addEventListener("click", () => {
   const booking = findBookingById(bookingSuccessCalendarButton.dataset.bookingId);
   openGoogleCalendarForBooking(booking);
+});
+
+bookingSuccessIcsButton.addEventListener("click", () => {
+  const booking = findBookingById(bookingSuccessIcsButton.dataset.bookingId);
+  downloadIcsForBooking(booking);
 });
 
 modalTabs.forEach((tab) => {
@@ -1488,12 +1548,17 @@ sellerCalendarNextButton.addEventListener("click", () => {
 });
 
 sellerCalendarList.addEventListener("click", (event) => {
-  const target = event.target.closest(".google-calendar-button");
+  const target = event.target.closest(".google-calendar-button, .ics-calendar-button");
   if (!target) {
     return;
   }
 
-  openGoogleCalendarForBooking(findBookingById(target.dataset.bookingId));
+  const booking = findBookingById(target.dataset.bookingId);
+  if (target.classList.contains("ics-calendar-button")) {
+    downloadIcsForBooking(booking);
+  } else {
+    openGoogleCalendarForBooking(booking);
+  }
 });
 
 sellerBookingsList.addEventListener("click", (event) => {
@@ -1514,6 +1579,11 @@ sellerBookingsList.addEventListener("click", (event) => {
 
   if (target.classList.contains("google-calendar-button")) {
     openGoogleCalendarForBooking(booking);
+    return;
+  }
+
+  if (target.classList.contains("ics-calendar-button")) {
+    downloadIcsForBooking(booking);
     return;
   }
 
@@ -1548,6 +1618,11 @@ myBookingsList.addEventListener("click", (event) => {
 
   if (target.classList.contains("google-calendar-button")) {
     openGoogleCalendarForBooking(findBookingById(target.dataset.bookingId));
+    return;
+  }
+
+  if (target.classList.contains("ics-calendar-button")) {
+    downloadIcsForBooking(findBookingById(target.dataset.bookingId));
     return;
   }
 
