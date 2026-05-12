@@ -94,6 +94,7 @@ const detailsNotice = document.getElementById("detailsNotice");
 const bookingSuccessPanel = document.getElementById("bookingSuccessPanel");
 const bookingSuccessSummary = document.getElementById("bookingSuccessSummary");
 const bookingSuccessCalendarButton = document.getElementById("bookingSuccessCalendarButton");
+const bookingSuccessIcsButton = document.getElementById("bookingSuccessIcsButton");
 const bookingForm = document.getElementById("bookingForm");
 const customerBookingsPanel = document.getElementById("customerBookingsPanel");
 const myBookingsList = document.getElementById("myBookingsList");
