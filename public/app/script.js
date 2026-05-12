@@ -457,7 +457,9 @@ function hideBookingSuccess() {
   bookingSuccessPanel.classList.add("is-hidden");
   bookingSuccessSummary.innerHTML = "";
   bookingSuccessCalendarButton.classList.add("is-hidden");
+  bookingSuccessIcsButton.classList.add("is-hidden");
   delete bookingSuccessCalendarButton.dataset.bookingId;
+  delete bookingSuccessIcsButton.dataset.bookingId;
 }
 
 function showBookingSuccess(booking) {
@@ -469,6 +471,8 @@ function showBookingSuccess(booking) {
   `;
   bookingSuccessCalendarButton.dataset.bookingId = booking.id;
   bookingSuccessCalendarButton.classList.remove("is-hidden");
+  bookingSuccessIcsButton.dataset.bookingId = booking.id;
+  bookingSuccessIcsButton.classList.remove("is-hidden");
   bookingSuccessPanel.classList.remove("is-hidden");
 }
 
