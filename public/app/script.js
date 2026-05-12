@@ -342,6 +342,52 @@ function openGoogleCalendarForBooking(booking) {
   }
 }
 
+function buildIcsForBooking(booking) {
+  const businessTitle = String(state.business.name || DEFAULT_DATA.business.name).trim() || DEFAULT_DATA.business.name;
+  const customerName = [booking.customer_first_name, booking.customer_last_name].filter(Boolean).join(" ").trim();
+  const descriptionLines = [
+    `שירות: ${booking.service_name}`,
+    `סטטוס: ${formatStatus(booking.status)}`,
+    customerName ? `לקוחה: ${customerName}` : "",
+    booking.customer_phone ? `טלפון: ${booking.customer_phone}` : "",
+    booking.notes ? `הערות: ${booking.notes}` : ""
+  ].filter(Boolean).join("\\n");
+  const dtStart = formatIcsDateTime(booking.booking_date, booking.booking_time);
+  const dtEnd = formatIcsDateTime(booking.booking_date, getBookingEndTime(booking));
+  const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const uid = `booking-${booking.id}@yaelnails`;
+  const escapeText = (s) => String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//YaelNails//Booking//HE",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${escapeText(`${businessTitle} - ${booking.service_name}`)}`,
+    `DESCRIPTION:${escapeText(descriptionLines)}`,
+    `LOCATION:${escapeText(state.business.address || "")}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+}
+
+function downloadIcsForBooking(booking) {
+  if (!booking) return;
+  const ics = buildIcsForBooking(booking);
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `appointment-${booking.booking_date}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function findBookingById(bookingId) {
   return state.bookings.find((booking) => booking.id === bookingId) || null;
 }
