@@ -813,22 +813,15 @@ function renderDetailsForm() {
   bookingForm.elements.fullName.value = fullName;
   bookingForm.elements.phone.value = currentCustomer?.phone || "";
 
-  const isLoggedIn = session.role === "customer";
-  detailsNotice.textContent = isLoggedIn
-    ? "הפרטים נמשכו מהחשבון שלך. אפשר לעדכן אותם לפני אישור."
-    : "כדי לאשר תור צריך להתחבר כלקוחה. בלי התחברות אי אפשר לשמור הזמנה.";
+  detailsNotice.textContent = "מלאי שם וטלפון כדי לאשר את התור.";
 
   Array.from(bookingForm.elements).forEach((element) => {
     if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLButtonElement)) {
       return;
     }
-
-    if (element.type === "submit") {
-      element.disabled = !isLoggedIn;
-    } else {
-      element.disabled = !isLoggedIn;
-    }
+    element.disabled = false;
   });
+
 }
 
 function renderCustomerBookings() {
@@ -1340,10 +1333,8 @@ sellerLoginForm.addEventListener("submit", (event) => {
 bookingForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  if (session.role !== "customer") {
-    openAuthModal("customer");
-    return;
-  }
+  // Login no longer required - customer can book by entering name+phone
+
 
   if (!ensureServiceSelected() || !ensureStaffSelected() || !ensureScheduleSelected()) {
     return;
