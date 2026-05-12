@@ -1333,10 +1333,8 @@ sellerLoginForm.addEventListener("submit", (event) => {
 bookingForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  if (session.role !== "customer") {
-    openAuthModal("customer");
-    return;
-  }
+  // Login no longer required - customer can book by entering name+phone
+
 
   if (!ensureServiceSelected() || !ensureStaffSelected() || !ensureScheduleSelected()) {
     return;
