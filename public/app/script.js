@@ -13,8 +13,8 @@ const DEFAULT_DATA = {
   business: {
     name: "Yael nails",
     description: "תיאור קצר של העסק.",
-    address: "כתובת העסק",
-    phone: "",
+    address: "נחל צלמון 12",
+    phone: "058-560-9500",
     instagram_url: ""
   },
   sellerCredentials: {
@@ -187,11 +187,11 @@ function normalizeBusiness(business) {
     normalized.description = DEFAULT_DATA.business.description;
   }
 
-  if (!normalized.address || normalized.address === "נחל צלמון 12") {
+  if (!normalized.address) {
     normalized.address = DEFAULT_DATA.business.address;
   }
 
-  if (!normalized.phone || normalized.phone === "058-560-9500") {
+  if (!normalized.phone) {
     normalized.phone = DEFAULT_DATA.business.phone;
   }
 
