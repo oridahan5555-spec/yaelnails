@@ -1170,6 +1170,11 @@ bookingSuccessCalendarButton.addEventListener("click", () => {
   openGoogleCalendarForBooking(booking);
 });
 
+bookingSuccessIcsButton.addEventListener("click", () => {
+  const booking = findBookingById(bookingSuccessIcsButton.dataset.bookingId);
+  downloadIcsForBooking(booking);
+});
+
 modalTabs.forEach((tab) => {
   tab.addEventListener("click", () => showAuthTab(tab.dataset.authTab));
 });
