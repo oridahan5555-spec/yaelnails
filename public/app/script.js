@@ -1582,6 +1582,11 @@ sellerBookingsList.addEventListener("click", (event) => {
     return;
   }
 
+  if (target.classList.contains("ics-calendar-button")) {
+    downloadIcsForBooking(booking);
+    return;
+  }
+
   if (target.classList.contains("undo-reject-button")) {
     booking.status = uiState.rejectUndoPreviousStatus || "pending";
     saveState();
