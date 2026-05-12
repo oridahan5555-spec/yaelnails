@@ -1621,6 +1621,11 @@ myBookingsList.addEventListener("click", (event) => {
     return;
   }
 
+  if (target.classList.contains("ics-calendar-button")) {
+    downloadIcsForBooking(findBookingById(target.dataset.bookingId));
+    return;
+  }
+
   if (!target.classList.contains("cancel-booking-button")) {
     return;
   }
