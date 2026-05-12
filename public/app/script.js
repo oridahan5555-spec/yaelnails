@@ -864,6 +864,7 @@ function renderCustomerBookings() {
             ? `
               <div class="booking-card-actions">
                 <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
                 <button class="danger-button cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
               </div>
             `
@@ -934,6 +935,7 @@ function renderSellerCalendar() {
             ? `
               <div class="booking-card-actions">
                 <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
               </div>
             `
             : ""
@@ -971,12 +973,14 @@ function renderSellerBookings() {
                 <button class="primary-button approve-booking-button" type="button" data-booking-id="${booking.id}">אישור תור</button>
                 <button class="danger-button reject-booking-button" type="button" data-booking-id="${booking.id}">דחיית תור</button>
                 <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
               </div>
             `
             : ["approved"].includes(booking.status)
               ? `
                 <div class="seller-actions">
                   <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
                 </div>
               `
               : ""
