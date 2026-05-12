@@ -1548,12 +1548,17 @@ sellerCalendarNextButton.addEventListener("click", () => {
 });
 
 sellerCalendarList.addEventListener("click", (event) => {
-  const target = event.target.closest(".google-calendar-button");
+  const target = event.target.closest(".google-calendar-button, .ics-calendar-button");
   if (!target) {
     return;
   }
 
-  openGoogleCalendarForBooking(findBookingById(target.dataset.bookingId));
+  const booking = findBookingById(target.dataset.bookingId);
+  if (target.classList.contains("ics-calendar-button")) {
+    downloadIcsForBooking(booking);
+  } else {
+    openGoogleCalendarForBooking(booking);
+  }
 });
 
 sellerBookingsList.addEventListener("click", (event) => {
