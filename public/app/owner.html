@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yael nails - ניהול העסק</title>
+  <title>ניהול העסק</title>
   <meta name="description" content="עמוד הניהול של בעלת העסק: לוח בקרה, יומן, בקשות תור, שירותים, שעות עבודה ופרטי העסק.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="owner-body">
   <header class="owner-header">
     <div class="owner-brand">
-      <strong id="ownerBrandName">Yael nails</strong>
+      <strong id="ownerBrandName">שם העסק שלך</strong>
       <span id="ownerBrandDescription">ניהול העסק</span>
     </div>
     <div class="owner-header-actions">
@@ -54,8 +54,11 @@
             <a href="#ownerBookingsSection">בקשות תור <span>→</span></a>
             <a href="#ownerServicesSection">שירותים ומחירים <span>→</span></a>
             <a href="#ownerHoursSection">שעות עבודה <span>→</span></a>
+            <a href="#ownerSpecialHoursSection">שעות מיוחדות <span>→</span></a>
+            <a href="#ownerBlockedSlotsSection">חסימת שעות <span>→</span></a>
             <a href="#ownerBusinessSection">פרטי העסק <span>→</span></a>
             <a href="#ownerAccessSection">כניסה לניהול <span>→</span></a>
+            <a href="#ownerResetSection">איפוס <span>→</span></a>
           </nav>
         </div>
       </aside>
@@ -124,12 +127,33 @@
               <span>טלפון</span>
               <input type="text" name="phone" required>
             </label>
-            <label class="field">
-              <span>קישור לאינסטגרם</span>
-              <input type="url" name="instagramUrl" placeholder="https://instagram.com/your-page">
-            </label>
-            <button class="primary-button" type="submit">שמירת פרטי עסק</button>
-          </form>
+          <label class="field">
+            <span>קישור לאינסטגרם</span>
+            <input type="url" name="instagramUrl" placeholder="https://instagram.com/your-page">
+          </label>
+          <div class="business-media-editor">
+            <section class="business-media-card">
+              <h4>תמונת קאבר</h4>
+              <div class="business-media-preview business-media-preview-cover" id="ownerCoverPreview"></div>
+              <label class="field">
+                <span>בחירת קובץ מהמחשב</span>
+                <input type="file" name="coverImageFile" accept="image/*">
+              </label>
+              <button class="ghost-button" type="button" data-clear-image="cover">איפוס תמונת קאבר</button>
+            </section>
+
+            <section class="business-media-card">
+              <h4>תמונת פרופיל</h4>
+              <div class="business-media-preview business-media-preview-avatar" id="ownerAvatarPreview"></div>
+              <label class="field">
+                <span>בחירת קובץ מהמחשב</span>
+                <input type="file" name="profileImageFile" accept="image/*">
+              </label>
+              <button class="ghost-button" type="button" data-clear-image="profile">איפוס תמונת פרופיל</button>
+            </section>
+          </div>
+          <button class="primary-button" type="submit">שמירת פרטי עסק</button>
+        </form>
 
           <form id="sellerCredentialsForm" class="admin-card owner-section-anchor" id="ownerAccessSection">
             <h3>פרטי כניסה לניהול</h3>
@@ -160,10 +184,108 @@
             <div id="hoursEditor" class="editor-list"></div>
             <button class="primary-button" type="submit">שמירת שעות עבודה</button>
           </form>
+
+          <section class="admin-card admin-card-wide owner-section-anchor" id="ownerSpecialHoursSection">
+            <h3>שעות מיוחדות לתאריך מסוים</h3>
+            <p class="admin-helper">
+              כאן מגדירים חריגה חד־פעמית ליום מסוים. למשל חג, חופשה, או יום שבו עובדים בשעות אחרות מהרגיל.
+            </p>
+
+            <form id="specialHoursForm" class="special-hours-form">
+              <div class="special-hours-form-grid">
+                <label class="field">
+                  <span>תאריך מיוחד</span>
+                  <input type="date" name="specialDate" required>
+                </label>
+
+                <label class="field">
+                  <span>שעת פתיחה</span>
+                  <input type="text" name="specialOpen" placeholder="10:00">
+                </label>
+
+                <label class="field">
+                  <span>שעת סגירה</span>
+                  <input type="text" name="specialClose" placeholder="18:00">
+                </label>
+
+                <label class="field">
+                  <span>מרווח בין תורים</span>
+                  <input type="number" name="specialInterval" min="5" step="5" value="30">
+                </label>
+
+                <label class="field special-hours-closed-field">
+                  <span>מצב מיוחד</span>
+                  <label class="checkbox-field">
+                    <input type="checkbox" name="specialClosed">
+                    <span>היום הזה סגור</span>
+                  </label>
+                </label>
+
+                <label class="field special-hours-note-field">
+                  <span>הערה קצרה (לא חובה)</span>
+                  <input type="text" name="specialNote" placeholder="למשל ערב חג, חופשה או יום קצר">
+                </label>
+              </div>
+
+              <button class="primary-button" type="submit">שמירת שעות מיוחדות</button>
+            </form>
+
+            <div id="specialHoursList" class="cards-list special-hours-list"></div>
+          </section>
+
+          <section class="admin-card admin-card-wide owner-section-anchor" id="ownerBlockedSlotsSection">
+            <h3>חסימת שעות ידנית</h3>
+            <p class="admin-helper">
+              כאן אפשר לחסום שעה מסוימת בלי לסגור יום שלם. הלקוחה פשוט לא תראה את השעה הזאת בזמן קביעת התור.
+            </p>
+
+            <form id="blockedSlotsForm" class="blocked-slot-form">
+              <div class="blocked-slot-form-grid">
+                <label class="field">
+                  <span>תאריך</span>
+                  <input type="date" name="blockedDate" required>
+                </label>
+
+                <label class="field">
+                  <span>שעה</span>
+                  <select name="blockedTime" required></select>
+                </label>
+
+                <label class="field blocked-slot-note-field">
+                  <span>סיבה קצרה (לא חובה)</span>
+                  <input type="text" name="blockedNote" placeholder="למשל הפסקה, יציאה או זמן פרטי">
+                </label>
+              </div>
+
+              <button class="primary-button" type="submit">חסימת שעה</button>
+            </form>
+
+            <div id="blockedSlotsList" class="cards-list blocked-slots-list"></div>
+          </section>
+
+          <section class="admin-card admin-card-wide owner-section-anchor" id="ownerResetSection">
+            <h3>איפוס מערכת</h3>
+            <p class="admin-helper">
+              כאן אפשר לאפס את כל הנתונים השמורים במערכת, כולל תורים, לקוחות, שירותים, תמונות והגדרות.
+            </p>
+            <button class="danger-button" id="resetBusinessTemplateButton" type="button">איפוס מלא</button>
+          </section>
         </div>
       </div>
     </div>
   </main>
+
+  <div class="modal is-hidden" id="calendarChoiceModal">
+    <div class="modal-backdrop" id="closeCalendarChoiceModal"></div>
+    <div class="modal-card">
+      <h3>הוספה ליומן</h3>
+      <div class="calendar-choice-actions">
+        <button class="ghost-button" id="deviceCalendarButton" type="button">הוספה ליומן הרגיל</button>
+        <button class="ghost-button" id="googleCalendarButton" type="button">הוספה ליומן Google</button>
+      </div>
+      <button class="danger-button calendar-choice-cancel" id="cancelCalendarChoiceButton" type="button">ביטול</button>
+    </div>
+  </div>
 
   <script src="owner.js"></script>
 </body>

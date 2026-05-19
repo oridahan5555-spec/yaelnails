@@ -1,5 +1,6 @@
 const LOCAL_STORAGE_KEY = "booking_app_local_working_v2";
 const SELLER_SESSION_KEY = "booking_app_seller_session_v1";
+const CUSTOMER_SESSION_KEY = "booking_app_customer_session_v1";
 const REJECT_UNDO_WINDOW_MS = 5000;
 
 const DEFAULT_OWNER_STAFF = {
@@ -12,34 +13,35 @@ const DEFAULT_OWNER_STAFF = {
 
 const DEFAULT_DATA = {
   business: {
-    name: "Yael nails",
-    description: "תיאור קצר של העסק.",
+    name: "שם העסק שלך",
+    description: "כתבי כאן תיאור קצר על העסק שלך.",
     address: "כתובת העסק",
     phone: "",
-    instagram_url: ""
+    instagram_url: "",
+    cover_image: "",
+    profile_image: ""
   },
   sellerCredentials: {
-    username: "seller",
+    username: "admin",
     password: "1234"
   },
   services: [
-    { id: "service-1", category: "טיפולי ידיים", name: "בניה בטיפס הפוך", price: 230, duration: 120 },
-    { id: "service-2", category: "טיפולי ידיים", name: "לק ג'ל + מבנה אנטומי", price: 110, duration: 90 },
-    { id: "service-3", category: "טיפולי ידיים", name: "הסרה לק ג'ל", price: 20, duration: 20 },
-    { id: "service-4", category: "טיפולי ידיים", name: "ציור", price: 10, duration: 10 },
-    { id: "service-5", category: "טיפולי ידיים", name: "פרנץ", price: 10, duration: 10 },
-    { id: "service-6", category: "טיפולי ידיים", name: "השלמה", price: 10, duration: 30 }
+    { id: "service-1", category: "קטגוריה ראשית", name: "שירות לדוגמה 1", price: 150, duration: 60 },
+    { id: "service-2", category: "קטגוריה ראשית", name: "שירות לדוגמה 2", price: 220, duration: 90 },
+    { id: "service-3", category: "קטגוריה נוספת", name: "שירות לדוגמה 3", price: 80, duration: 30 }
   ],
   staff: [DEFAULT_OWNER_STAFF],
   workingHours: [
-    { id: "hours-0", day_of_week: 0, day_label: "ראשון", opens_at: "17:00", closes_at: "20:00", slot_interval_minutes: 30, is_closed: false },
-    { id: "hours-1", day_of_week: 1, day_label: "שני", opens_at: "15:40", closes_at: "20:00", slot_interval_minutes: 20, is_closed: false },
-    { id: "hours-2", day_of_week: 2, day_label: "שלישי", opens_at: "15:00", closes_at: "20:00", slot_interval_minutes: 30, is_closed: false },
-    { id: "hours-3", day_of_week: 3, day_label: "רביעי", opens_at: null, closes_at: null, slot_interval_minutes: 30, is_closed: true },
-    { id: "hours-4", day_of_week: 4, day_label: "חמישי", opens_at: "15:30", closes_at: "20:00", slot_interval_minutes: 30, is_closed: false },
-    { id: "hours-5", day_of_week: 5, day_label: "שישי", opens_at: null, closes_at: null, slot_interval_minutes: 30, is_closed: true },
+    { id: "hours-0", day_of_week: 0, day_label: "ראשון", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-1", day_of_week: 1, day_label: "שני", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-2", day_of_week: 2, day_label: "שלישי", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-3", day_of_week: 3, day_label: "רביעי", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-4", day_of_week: 4, day_label: "חמישי", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-5", day_of_week: 5, day_label: "שישי", opens_at: "09:00", closes_at: "14:00", slot_interval_minutes: 30, is_closed: false },
     { id: "hours-6", day_of_week: 6, day_label: "שבת", opens_at: null, closes_at: null, slot_interval_minutes: 30, is_closed: true }
   ],
+  specialHours: [],
+  blockedSlots: [],
   bookings: [],
   users: []
 };
@@ -49,6 +51,9 @@ const state = loadState();
 const uiState = {
   sellerCalendarDate: todayDate(),
   sellerCalendarMonthKey: monthKey(new Date()),
+  specialHoursDate: todayDate(),
+  blockedSlotDate: todayDate(),
+  calendarChoiceBookingId: null,
   rejectUndoBookingId: null,
   rejectUndoPreviousStatus: null,
   rejectUndoTimeoutId: null
@@ -62,6 +67,13 @@ const ownerLoginForm = document.getElementById("ownerLoginForm");
 const ownerLogoutButton = document.getElementById("ownerLogoutButton");
 const ownerStatsGrid = document.getElementById("ownerStatsGrid");
 const ownerTipsGrid = document.getElementById("ownerTipsGrid");
+const ownerCoverPreview = document.getElementById("ownerCoverPreview");
+const ownerAvatarPreview = document.getElementById("ownerAvatarPreview");
+const calendarChoiceModal = document.getElementById("calendarChoiceModal");
+const closeCalendarChoiceModal = document.getElementById("closeCalendarChoiceModal");
+const deviceCalendarButton = document.getElementById("deviceCalendarButton");
+const googleCalendarButton = document.getElementById("googleCalendarButton");
+const cancelCalendarChoiceButton = document.getElementById("cancelCalendarChoiceButton");
 
 const sellerCalendarPrevButton = document.getElementById("sellerCalendarPrevButton");
 const sellerCalendarNextButton = document.getElementById("sellerCalendarNextButton");
@@ -77,6 +89,11 @@ const servicesEditor = document.getElementById("servicesEditor");
 const addServiceButton = document.getElementById("addServiceButton");
 const hoursForm = document.getElementById("hoursForm");
 const hoursEditor = document.getElementById("hoursEditor");
+const specialHoursForm = document.getElementById("specialHoursForm");
+const specialHoursList = document.getElementById("specialHoursList");
+const blockedSlotsForm = document.getElementById("blockedSlotsForm");
+const blockedSlotsList = document.getElementById("blockedSlotsList");
+const resetBusinessTemplateButton = document.getElementById("resetBusinessTemplateButton");
 
 function loadState() {
   const defaults = structuredClone(DEFAULT_DATA);
@@ -97,6 +114,8 @@ function loadState() {
       services: Array.isArray(parsed.services) && parsed.services.length ? parsed.services : defaults.services,
       staff: Array.isArray(parsed.staff) && parsed.staff.length ? parsed.staff : defaults.staff,
       workingHours: Array.isArray(parsed.workingHours) && parsed.workingHours.length ? parsed.workingHours : defaults.workingHours,
+      specialHours: normalizeSpecialHours(parsed.specialHours),
+      blockedSlots: normalizeBlockedSlots(parsed.blockedSlots),
       bookings: Array.isArray(parsed.bookings) ? parsed.bookings : [],
       users: Array.isArray(parsed.users) ? parsed.users : []
     };
@@ -118,24 +137,63 @@ function saveState() {
       services: state.services,
       staff: state.staff,
       workingHours: state.workingHours,
+      specialHours: state.specialHours,
+      blockedSlots: state.blockedSlots,
       bookings: state.bookings,
       users: state.users
     })
   );
 }
 
+function rememberSellerSession() {
+  localStorage.setItem(SELLER_SESSION_KEY, "1");
+}
+
+function clearRememberedSessions() {
+  localStorage.removeItem(SELLER_SESSION_KEY);
+  localStorage.removeItem(CUSTOMER_SESSION_KEY);
+  sessionStorage.removeItem(SELLER_SESSION_KEY);
+}
+
+function isSellerRemembered() {
+  return localStorage.getItem(SELLER_SESSION_KEY) === "1" || sessionStorage.getItem(SELLER_SESSION_KEY) === "1";
+}
+
+function resetStateToDefaultTemplate() {
+  const freshState = structuredClone(DEFAULT_DATA);
+
+  state.business = normalizeBusiness(freshState.business);
+  state.sellerCredentials = { ...freshState.sellerCredentials };
+  state.services = freshState.services.map((service) => ({ ...service }));
+  state.staff = normalizeStaff();
+  state.workingHours = freshState.workingHours.map((item) => ({ ...item }));
+  state.specialHours = [];
+  state.blockedSlots = [];
+  state.bookings = [];
+  state.users = [];
+
+  uiState.sellerCalendarDate = todayDate();
+  uiState.sellerCalendarMonthKey = monthKey(new Date());
+  uiState.specialHoursDate = todayDate();
+  uiState.blockedSlotDate = todayDate();
+  uiState.calendarChoiceBookingId = null;
+
+  clearRejectUndo(false);
+  saveState();
+}
+
 function normalizeBusiness(business) {
   const normalized = { ...business };
 
-  if (!normalized.name || normalized.name === "שם העסק" || normalized.phone === "058-560-9500") {
+  if (!normalized.name || normalized.name === "שם העסק") {
     normalized.name = DEFAULT_DATA.business.name;
   }
 
-  if (!normalized.description || normalized.description === "מניקור, ג'ל ובנייה באווירה נקייה, רגועה ומדויקת.") {
+  if (!normalized.description || normalized.description === "תיאור קצר של העסק." || normalized.description === "מניקור, ג'ל ובנייה באווירה נקייה, רגועה ומדויקת.") {
     normalized.description = DEFAULT_DATA.business.description;
   }
 
-  if (!normalized.address || normalized.address === "נחל צלמון 12") {
+  if (!normalized.address || normalized.address === "כתובת העסק" || normalized.address === "נחל צלמון 12") {
     normalized.address = DEFAULT_DATA.business.address;
   }
 
@@ -144,6 +202,8 @@ function normalizeBusiness(business) {
   }
 
   normalized.instagram_url = normalizeInstagramUrl(normalized.instagram_url);
+  normalized.cover_image = String(normalized.cover_image || "").trim();
+  normalized.profile_image = String(normalized.profile_image || "").trim();
   return normalized;
 }
 
@@ -165,6 +225,72 @@ function normalizeBookings(bookings, staff, services) {
       staff_name: assignedStaff.name
     };
   });
+}
+
+function normalizeBlockedSlots(blockedSlots) {
+  if (!Array.isArray(blockedSlots)) {
+    return [];
+  }
+
+  const seen = new Set();
+
+  return blockedSlots
+    .map((slot, index) => ({
+      id: String(slot?.id || `blocked-slot-${Date.now()}-${index}`),
+      blocked_date: String(slot?.blocked_date || "").trim(),
+      blocked_time: String(slot?.blocked_time || "").trim().slice(0, 5),
+      note: String(slot?.note || "").trim()
+    }))
+    .filter((slot) => slot.blocked_date && /^\d{2}:\d{2}$/.test(slot.blocked_time))
+    .filter((slot) => {
+      const key = `${slot.blocked_date}|${slot.blocked_time}`;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => `${left.blocked_date} ${left.blocked_time}`.localeCompare(`${right.blocked_date} ${right.blocked_time}`));
+}
+
+function normalizeSpecialHours(specialHours) {
+  if (!Array.isArray(specialHours)) {
+    return [];
+  }
+
+  const seen = new Set();
+
+  return specialHours
+    .map((item, index) => ({
+      id: String(item?.id || `special-hours-${Date.now()}-${index}`),
+      special_date: String(item?.special_date || "").trim(),
+      opens_at: String(item?.opens_at || "").trim().slice(0, 5) || null,
+      closes_at: String(item?.closes_at || "").trim().slice(0, 5) || null,
+      slot_interval_minutes: Number(item?.slot_interval_minutes || 30),
+      is_closed: Boolean(item?.is_closed),
+      note: String(item?.note || "").trim()
+    }))
+    .filter((item) => item.special_date)
+    .filter((item) => {
+      if (!item.is_closed && (!/^\d{2}:\d{2}$/.test(String(item.opens_at || "")) || !/^\d{2}:\d{2}$/.test(String(item.closes_at || "")))) {
+        return false;
+      }
+
+      if (item.is_closed) {
+        item.opens_at = null;
+        item.closes_at = null;
+      }
+
+      const key = item.special_date;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => left.special_date.localeCompare(right.special_date));
 }
 
 function normalizeInstagramUrl(value) {
@@ -197,6 +323,23 @@ function normalizePhoneNumber(value) {
   return String(value || "").replace(/[^\d+]/g, "");
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("file-read-failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function resolveBusinessImage({ currentValue, file }) {
+  if (file) {
+    return readFileAsDataUrl(file);
+  }
+
+  return currentValue || "";
+}
+
 function parseTimeToMinutes(value) {
   const [hours, minutes] = value.split(":").map(Number);
   return hours * 60 + minutes;
@@ -226,6 +369,51 @@ function formatIcsDateTime(dateValue, timeValue) {
 function getBookingEndTime(booking) {
   const startMinutes = parseTimeToMinutes(String(booking.booking_time).slice(0, 5));
   return formatMinutesToTime(startMinutes + Number(booking.duration_minutes || 30));
+}
+
+function escapeIcsText(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\r?\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function buildCalendarFileName(booking) {
+  const businessPart = String(state.business.name || "booking")
+    .trim()
+    .replace(/[<>:"/\\|?*]+/g, "")
+    .replace(/\s+/g, "-");
+
+  return `${businessPart || "booking"}-${booking.booking_date}-${String(booking.booking_time).replace(":", "-")}.ics`;
+}
+
+function buildDeviceCalendarContent(booking) {
+  const customerName = [booking.customer_first_name, booking.customer_last_name].filter(Boolean).join(" ").trim();
+  const descriptionLines = [
+    `שירות: ${booking.service_name}`,
+    `סטטוס: ${formatStatus(booking.status)}`,
+    customerName ? `לקוחה: ${customerName}` : "",
+    booking.customer_phone ? `טלפון: ${booking.customer_phone}` : "",
+    booking.notes ? `הערות: ${booking.notes}` : ""
+  ].filter(Boolean);
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Booking App//HE",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${booking.id}@local-booking-app`,
+    `DTSTAMP:${formatIcsDateTime(todayDate(), "00:00")}`,
+    `DTSTART:${formatIcsDateTime(booking.booking_date, booking.booking_time)}`,
+    `DTEND:${formatIcsDateTime(booking.booking_date, getBookingEndTime(booking))}`,
+    `SUMMARY:${escapeIcsText(`${state.business.name} - ${booking.service_name}`)}`,
+    `DESCRIPTION:${escapeIcsText(descriptionLines.join("\n"))}`,
+    `LOCATION:${escapeIcsText(state.business.address || "")}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
 }
 
 function formatStatus(status) {
@@ -284,6 +472,33 @@ function openGoogleCalendarForBooking(booking) {
   }
 }
 
+function downloadDeviceCalendar(booking) {
+  if (!booking) {
+    return;
+  }
+
+  const file = new Blob([buildDeviceCalendarContent(booking)], {
+    type: "text/calendar;charset=utf-8"
+  });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(file);
+  link.download = buildCalendarFileName(booking);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+function openCalendarChoiceModal(bookingId) {
+  uiState.calendarChoiceBookingId = bookingId;
+  calendarChoiceModal.classList.remove("is-hidden");
+}
+
+function closeCalendarChoice() {
+  uiState.calendarChoiceBookingId = null;
+  calendarChoiceModal.classList.add("is-hidden");
+}
+
 function findBookingById(bookingId) {
   return state.bookings.find((booking) => booking.id === bookingId) || null;
 }
@@ -317,6 +532,65 @@ function isRejectUndoActiveForBooking(bookingId) {
 
 function getPendingBookings() {
   return state.bookings.filter((booking) => booking.status === "pending");
+}
+
+function findRegularWorkingHoursForDate(dateValue) {
+  const dayOfWeek = new Date(`${dateValue}T00:00:00`).getDay();
+  return state.workingHours.find((entry) => Number(entry.day_of_week) === dayOfWeek) || null;
+}
+
+function findSpecialHoursForDate(dateValue) {
+  return state.specialHours.find((entry) => entry.special_date === dateValue) || null;
+}
+
+function findWorkingHoursForDate(dateValue) {
+  const specialDay = findSpecialHoursForDate(dateValue);
+  const regularDay = findRegularWorkingHoursForDate(dateValue);
+
+  if (!specialDay) {
+    return regularDay;
+  }
+
+  return {
+    id: specialDay.id,
+    day_of_week: regularDay?.day_of_week ?? new Date(`${dateValue}T00:00:00`).getDay(),
+    day_label: regularDay?.day_label || "יום מיוחד",
+    opens_at: specialDay.is_closed ? null : specialDay.opens_at,
+    closes_at: specialDay.is_closed ? null : specialDay.closes_at,
+    slot_interval_minutes: Number(specialDay.slot_interval_minutes || regularDay?.slot_interval_minutes || 30),
+    is_closed: Boolean(specialDay.is_closed),
+    is_special: true,
+    note: specialDay.note || ""
+  };
+}
+
+function getWorkingDaySlotTimes(dateValue) {
+  const workDay = findWorkingHoursForDate(dateValue);
+
+  if (!workDay || workDay.is_closed || !workDay.opens_at || !workDay.closes_at) {
+    return [];
+  }
+
+  const openMinutes = parseTimeToMinutes(String(workDay.opens_at).slice(0, 5));
+  const closeMinutes = parseTimeToMinutes(String(workDay.closes_at).slice(0, 5));
+  const interval = Number(workDay.slot_interval_minutes || 30);
+  const times = [];
+
+  for (let start = openMinutes; start < closeMinutes; start += interval) {
+    times.push(formatMinutesToTime(start));
+  }
+
+  return times;
+}
+
+function getBlockedSlotsForDate(dateValue) {
+  return state.blockedSlots
+    .filter((slot) => slot.blocked_date === dateValue)
+    .sort((left, right) => left.blocked_time.localeCompare(right.blocked_time));
+}
+
+function isSlotBlocked(dateValue, timeValue) {
+  return state.blockedSlots.some((slot) => slot.blocked_date === dateValue && slot.blocked_time === timeValue);
 }
 
 function getTodayBookings() {
@@ -385,12 +659,14 @@ function buildSellerCalendarDays(monthDate) {
     const hasBookings = state.bookings.some(
       (booking) => booking.booking_date === value && booking.status !== "cancelled"
     );
+    const hasSpecialHours = state.specialHours.some((entry) => entry.special_date === value);
+    const hasBlockedSlots = state.blockedSlots.some((slot) => slot.blocked_date === value);
 
     return {
       value,
       dayNumber: date.getDate(),
       isCurrentMonth: date.getMonth() === monthDate.getMonth(),
-      hasBookings
+      hasBookings: hasBookings || hasSpecialHours || hasBlockedSlots
     };
   });
 }
@@ -398,6 +674,16 @@ function buildSellerCalendarDays(monthDate) {
 function renderHeader() {
   ownerBrandName.textContent = state.business.name;
   ownerBrandDescription.textContent = state.business.description || "ניהול העסק";
+}
+
+function renderBusinessImagePreviews() {
+  ownerCoverPreview.style.backgroundImage = state.business.cover_image
+    ? `linear-gradient(rgba(110, 70, 118, 0.18), rgba(110, 70, 118, 0.18)), url("${state.business.cover_image}")`
+    : "";
+
+  ownerAvatarPreview.style.backgroundImage = state.business.profile_image
+    ? `url("${state.business.profile_image}")`
+    : "";
 }
 
 function renderOwnerStats() {
@@ -534,13 +820,50 @@ function renderSellerCalendar() {
   const dailyBookings = state.bookings
     .filter((booking) => booking.booking_date === uiState.sellerCalendarDate && booking.status !== "cancelled")
     .sort((a, b) => a.booking_time.localeCompare(b.booking_time));
+  const specialDay = findSpecialHoursForDate(uiState.sellerCalendarDate);
+  const dailyBlockedSlots = getBlockedSlotsForDate(uiState.sellerCalendarDate);
 
-  if (!dailyBookings.length) {
+  if (!dailyBookings.length && !dailyBlockedSlots.length && !specialDay) {
     sellerCalendarList.innerHTML = '<div class="notice-box">אין תורים ביום הזה.</div>';
     return;
   }
 
-  sellerCalendarList.innerHTML = dailyBookings
+  const specialDayCard = specialDay
+    ? `
+      <article class="booking-card status-card-special">
+        <div class="booking-card-head">
+          <strong>${formatDisplayDate(specialDay.special_date)}</strong>
+          <span class="status-pill status-special">${specialDay.is_closed ? "יום סגור מיוחד" : "שעות מיוחדות"}</span>
+        </div>
+        <div class="booking-meta">
+          <span>${specialDay.is_closed ? "לא ניתן לקבוע תורים ביום הזה" : `${specialDay.opens_at} - ${specialDay.closes_at}`}</span>
+          <span>${specialDay.is_closed ? "היום הזה סגור באופן מיוחד" : `כל ${specialDay.slot_interval_minutes} דקות`}</span>
+        </div>
+        ${specialDay.note ? `<div class="booking-note">הערה: ${specialDay.note}</div>` : ""}
+      </article>
+    `
+    : "";
+
+  const blockedCards = dailyBlockedSlots
+    .map((slot) => `
+      <article class="booking-card status-card-blocked">
+        <div class="booking-card-head">
+          <strong>${slot.blocked_time}</strong>
+          <span class="status-pill status-blocked">שעה חסומה</span>
+        </div>
+        <div class="booking-meta">
+          <span>${formatDisplayDate(slot.blocked_date)}</span>
+          <span>הזמן הזה לא מוצג ללקוחות</span>
+        </div>
+        ${slot.note ? `<div class="booking-note">סיבה: ${slot.note}</div>` : ""}
+        <div class="booking-card-actions">
+          <button class="ghost-button unblock-slot-button" type="button" data-blocked-slot-id="${slot.id}">הסרת חסימה</button>
+        </div>
+      </article>
+    `)
+    .join("");
+
+  const bookingCards = dailyBookings
     .map((booking) => `
       <article class="booking-card status-card-${booking.status}">
         <div class="booking-card-head">
@@ -557,7 +880,8 @@ function renderSellerCalendar() {
           ["pending", "approved"].includes(booking.status)
             ? `
               <div class="booking-card-actions">
-                <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                <button class="danger-button seller-cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
               </div>
             `
             : ""
@@ -565,6 +889,8 @@ function renderSellerCalendar() {
       </article>
     `)
     .join("");
+
+  sellerCalendarList.innerHTML = `${specialDayCard}${blockedCards}${bookingCards}`;
 }
 
 function renderSellerBookings() {
@@ -594,13 +920,15 @@ function renderSellerBookings() {
               <div class="seller-actions">
                 <button class="primary-button approve-booking-button" type="button" data-booking-id="${booking.id}">אישור תור</button>
                 <button class="danger-button reject-booking-button" type="button" data-booking-id="${booking.id}">דחיית תור</button>
-                <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                <button class="danger-button seller-cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
               </div>
             `
             : booking.status === "approved"
               ? `
                 <div class="seller-actions">
-                  <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
+                  <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                  <button class="danger-button seller-cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
                 </div>
               `
               : ""
@@ -626,6 +954,9 @@ function renderEditors() {
   businessForm.elements.address.value = state.business.address;
   businessForm.elements.phone.value = state.business.phone;
   businessForm.elements.instagramUrl.value = normalizeInstagramUrl(state.business.instagram_url);
+  businessForm.elements.coverImageFile.value = "";
+  businessForm.elements.profileImageFile.value = "";
+  renderBusinessImagePreviews();
 
   sellerCredentialsForm.elements.username.value = state.sellerCredentials.username;
   sellerCredentialsForm.elements.password.value = "";
@@ -667,6 +998,124 @@ function renderEditors() {
   `;
 }
 
+function setSpecialHoursClosedState() {
+  const isClosed = Boolean(specialHoursForm.elements.specialClosed.checked);
+  specialHoursForm.elements.specialOpen.disabled = isClosed;
+  specialHoursForm.elements.specialClose.disabled = isClosed;
+  specialHoursForm.elements.specialInterval.disabled = isClosed;
+}
+
+function renderSpecialHoursManager() {
+  const dateField = specialHoursForm.elements.specialDate;
+  const openField = specialHoursForm.elements.specialOpen;
+  const closeField = specialHoursForm.elements.specialClose;
+  const intervalField = specialHoursForm.elements.specialInterval;
+  const closedField = specialHoursForm.elements.specialClosed;
+  const noteField = specialHoursForm.elements.specialNote;
+  const selectedDate = uiState.specialHoursDate || uiState.sellerCalendarDate || todayDate();
+  const specialDay = findSpecialHoursForDate(selectedDate);
+  const regularDay = findRegularWorkingHoursForDate(selectedDate);
+
+  dateField.min = todayDate();
+  dateField.value = selectedDate;
+  openField.value = specialDay?.opens_at || regularDay?.opens_at || "10:00";
+  closeField.value = specialDay?.closes_at || regularDay?.closes_at || "18:00";
+  intervalField.value = String(specialDay?.slot_interval_minutes || regularDay?.slot_interval_minutes || 30);
+  closedField.checked = Boolean(specialDay?.is_closed);
+  noteField.value = specialDay?.note || "";
+  setSpecialHoursClosedState();
+
+  if (!state.specialHours.length) {
+    specialHoursList.innerHTML = '<div class="notice-box">עדיין אין שעות מיוחדות. ברגע שתשמרי תאריך מיוחד, הוא יופיע כאן.</div>';
+    return;
+  }
+
+  specialHoursList.innerHTML = [...state.specialHours]
+    .sort((left, right) => left.special_date.localeCompare(right.special_date))
+    .map((item) => `
+      <article class="booking-card status-card-special">
+        <div class="booking-card-head">
+          <strong>${formatDisplayDate(item.special_date)}</strong>
+          <span class="status-pill status-special">${item.is_closed ? "יום סגור מיוחד" : "שעות מיוחדות"}</span>
+        </div>
+        <div class="booking-meta">
+          <span>${item.is_closed ? "לא ניתן לקבוע תורים ביום הזה" : `${item.opens_at} - ${item.closes_at}`}</span>
+          <span>${item.is_closed ? "היום הזה סגור באופן מיוחד" : `כל ${item.slot_interval_minutes} דקות`}</span>
+        </div>
+        ${item.note ? `<div class="booking-note">הערה: ${item.note}</div>` : ""}
+        <div class="booking-card-actions">
+          <button class="ghost-button edit-special-hours-button" type="button" data-special-date="${item.special_date}">עריכה</button>
+          <button class="danger-button remove-special-hours-button" type="button" data-special-id="${item.id}">הסרה</button>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function renderBlockedSlotTimeOptions(preferredTime = "") {
+  const dateField = blockedSlotsForm.elements.blockedDate;
+  const timeField = blockedSlotsForm.elements.blockedTime;
+  const selectedDate = uiState.blockedSlotDate || uiState.sellerCalendarDate || todayDate();
+  const availableTimes = getWorkingDaySlotTimes(selectedDate);
+
+  dateField.min = todayDate();
+  dateField.value = selectedDate;
+
+  if (!availableTimes.length) {
+    timeField.innerHTML = '<option value="">אין שעות פעילות ביום הזה</option>';
+    timeField.disabled = true;
+    return;
+  }
+
+  timeField.disabled = false;
+  timeField.innerHTML = `
+    <option value="">בחירת שעה</option>
+    ${availableTimes.map((time) => `<option value="${time}">${time}</option>`).join("")}
+  `;
+
+  if (availableTimes.includes(preferredTime)) {
+    timeField.value = preferredTime;
+  }
+}
+
+function renderBlockedSlotsManager() {
+  if (!uiState.blockedSlotDate) {
+    uiState.blockedSlotDate = uiState.sellerCalendarDate || todayDate();
+  }
+
+  renderBlockedSlotTimeOptions(String(blockedSlotsForm.elements.blockedTime.value || ""));
+
+  if (!state.blockedSlots.length) {
+    blockedSlotsList.innerHTML = '<div class="notice-box">עדיין אין שעות חסומות. ברגע שתחסמי שעה, היא תופיע כאן.</div>';
+    return;
+  }
+
+  blockedSlotsList.innerHTML = [...state.blockedSlots]
+    .sort((left, right) => `${left.blocked_date} ${left.blocked_time}`.localeCompare(`${right.blocked_date} ${right.blocked_time}`))
+    .map((slot) => {
+      const dayOfWeek = new Date(`${slot.blocked_date}T00:00:00`).getDay();
+      const dayLabel = state.workingHours.find((row) => Number(row.day_of_week) === dayOfWeek)?.day_label || "יום";
+
+      return `
+        <article class="booking-card status-card-blocked">
+          <div class="booking-card-head">
+            <strong>${formatDisplayDate(slot.blocked_date)}</strong>
+            <span class="status-pill status-blocked">שעה חסומה</span>
+          </div>
+          <div class="booking-meta">
+            <span>${slot.blocked_time}</span>
+            <span>${dayLabel}</span>
+          </div>
+          ${slot.note ? `<div class="booking-note">סיבה: ${slot.note}</div>` : ""}
+          <div class="booking-card-actions">
+            <button class="ghost-button unblock-slot-button" type="button" data-blocked-slot-id="${slot.id}">הסרת חסימה</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function rerenderAll() {
   renderHeader();
   renderOwnerStats();
@@ -674,6 +1123,8 @@ function rerenderAll() {
   renderSellerCalendar();
   renderSellerBookings();
   renderEditors();
+  renderSpecialHoursManager();
+  renderBlockedSlotsManager();
 }
 
 function showOwnerLayout() {
@@ -695,19 +1146,57 @@ ownerLoginForm.addEventListener("submit", (event) => {
   const username = String(formData.get("username")).trim();
   const password = String(formData.get("password"));
 
-  if (username !== state.sellerCredentials.username || password !== state.sellerCredentials.password) {
-    alert("שם המשתמש או הסיסמה שגויים.");
+  if (username !== state.sellerCredentials.username) {
+    alert("שם המשתמש לא טוב.");
     return;
   }
 
+  if (password !== state.sellerCredentials.password) {
+    alert("הסיסמה לא טובה.");
+    return;
+  }
+
+  rememberSellerSession();
   sessionStorage.setItem(SELLER_SESSION_KEY, "1");
   showOwnerLayout();
 });
 
 ownerLogoutButton.addEventListener("click", () => {
   clearRejectUndo(false);
-  sessionStorage.removeItem(SELLER_SESSION_KEY);
+  closeCalendarChoice();
+  clearRememberedSessions();
   window.location.href = "index.html";
+});
+
+resetBusinessTemplateButton.addEventListener("click", () => {
+  const shouldReset = window.confirm(
+    "האיפוס ימחק את כל הנתונים השמורים במערכת, כולל תורים, לקוחות, שירותים ותמונות. להמשיך?"
+  );
+
+  if (!shouldReset) {
+    return;
+  }
+
+  resetStateToDefaultTemplate();
+  closeCalendarChoice();
+  clearRememberedSessions();
+  ownerLoginForm.reset();
+  showOwnerLogin();
+  renderHeader();
+  alert("האיפוס הושלם. פרטי הכניסה הזמניים הם: admin / 1234");
+});
+
+closeCalendarChoiceModal.addEventListener("click", closeCalendarChoice);
+cancelCalendarChoiceButton.addEventListener("click", closeCalendarChoice);
+
+deviceCalendarButton.addEventListener("click", () => {
+  downloadDeviceCalendar(findBookingById(uiState.calendarChoiceBookingId));
+  closeCalendarChoice();
+});
+
+googleCalendarButton.addEventListener("click", () => {
+  openGoogleCalendarForBooking(findBookingById(uiState.calendarChoiceBookingId));
+  closeCalendarChoice();
 });
 
 sellerCalendarGrid.addEventListener("click", (event) => {
@@ -717,7 +1206,11 @@ sellerCalendarGrid.addEventListener("click", (event) => {
   }
 
   uiState.sellerCalendarDate = button.dataset.sellerDate;
+  uiState.specialHoursDate = button.dataset.sellerDate;
+  uiState.blockedSlotDate = button.dataset.sellerDate;
   renderSellerCalendar();
+  renderSpecialHoursManager();
+  renderBlockedSlotsManager();
 });
 
 sellerCalendarPrevButton.addEventListener("click", () => {
@@ -735,12 +1228,192 @@ sellerCalendarNextButton.addEventListener("click", () => {
 });
 
 sellerCalendarList.addEventListener("click", (event) => {
-  const target = event.target.closest(".google-calendar-button");
+  const target = event.target.closest("button");
   if (!target) {
     return;
   }
 
-  openGoogleCalendarForBooking(findBookingById(target.dataset.bookingId));
+  if (target.classList.contains("unblock-slot-button")) {
+    state.blockedSlots = state.blockedSlots.filter((slot) => slot.id !== target.dataset.blockedSlotId);
+    saveState();
+    rerenderAll();
+    return;
+  }
+
+  const booking = findBookingById(target.dataset.bookingId);
+  if (!booking) {
+    return;
+  }
+
+  if (target.classList.contains("calendar-choice-button")) {
+    openCalendarChoiceModal(booking.id);
+    return;
+  }
+
+  if (!target.classList.contains("seller-cancel-booking-button")) {
+    return;
+  }
+
+  if (!["pending", "approved"].includes(booking.status)) {
+    return;
+  }
+
+  if (!window.confirm("האם לבטל את התור הזה?")) {
+    return;
+  }
+
+  booking.status = "cancelled";
+  saveState();
+  rerenderAll();
+});
+
+blockedSlotsForm.elements.blockedDate.addEventListener("change", () => {
+  uiState.blockedSlotDate = String(blockedSlotsForm.elements.blockedDate.value || "");
+  if (uiState.blockedSlotDate) {
+    uiState.sellerCalendarMonthKey = monthKey(new Date(`${uiState.blockedSlotDate}T00:00:00`));
+  }
+  renderBlockedSlotTimeOptions();
+  renderSellerCalendar();
+});
+
+specialHoursForm.elements.specialDate.addEventListener("change", () => {
+  uiState.specialHoursDate = String(specialHoursForm.elements.specialDate.value || "");
+
+  if (uiState.specialHoursDate) {
+    uiState.sellerCalendarDate = uiState.specialHoursDate;
+    uiState.blockedSlotDate = uiState.specialHoursDate;
+    uiState.sellerCalendarMonthKey = monthKey(new Date(`${uiState.specialHoursDate}T00:00:00`));
+  }
+
+  renderSpecialHoursManager();
+  renderBlockedSlotsManager();
+  renderSellerCalendar();
+});
+
+specialHoursForm.elements.specialClosed.addEventListener("change", () => {
+  setSpecialHoursClosedState();
+});
+
+specialHoursForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const specialDate = String(specialHoursForm.elements.specialDate.value || "").trim();
+  const specialOpen = String(specialHoursForm.elements.specialOpen.value || "").trim();
+  const specialClose = String(specialHoursForm.elements.specialClose.value || "").trim();
+  const specialInterval = Number(specialHoursForm.elements.specialInterval.value || 30);
+  const specialClosed = Boolean(specialHoursForm.elements.specialClosed.checked);
+  const specialNote = String(specialHoursForm.elements.specialNote.value || "").trim();
+
+  if (!specialDate) {
+    alert("צריך לבחור תאריך מיוחד.");
+    return;
+  }
+
+  if (!specialClosed) {
+    if (!specialOpen || !specialClose) {
+      alert("צריך למלא שעת פתיחה ושעת סגירה.");
+      return;
+    }
+
+    if (parseTimeToMinutes(specialClose) <= parseTimeToMinutes(specialOpen)) {
+      alert("שעת הסגירה חייבת להיות אחרי שעת הפתיחה.");
+      return;
+    }
+  }
+
+  state.specialHours = normalizeSpecialHours([
+    ...state.specialHours.filter((item) => item.special_date !== specialDate),
+    {
+      id: `special-hours-${Date.now()}`,
+      special_date: specialDate,
+      opens_at: specialClosed ? null : specialOpen,
+      closes_at: specialClosed ? null : specialClose,
+      slot_interval_minutes: specialInterval,
+      is_closed: specialClosed,
+      note: specialNote
+    }
+  ]);
+
+  uiState.specialHoursDate = specialDate;
+  uiState.sellerCalendarDate = specialDate;
+  uiState.blockedSlotDate = specialDate;
+  uiState.sellerCalendarMonthKey = monthKey(new Date(`${specialDate}T00:00:00`));
+  saveState();
+  rerenderAll();
+});
+
+specialHoursList.addEventListener("click", (event) => {
+  const editButton = event.target.closest(".edit-special-hours-button");
+  if (editButton) {
+    uiState.specialHoursDate = String(editButton.dataset.specialDate || "");
+    uiState.sellerCalendarDate = uiState.specialHoursDate || uiState.sellerCalendarDate;
+    uiState.blockedSlotDate = uiState.specialHoursDate || uiState.blockedSlotDate;
+
+    if (uiState.specialHoursDate) {
+      uiState.sellerCalendarMonthKey = monthKey(new Date(`${uiState.specialHoursDate}T00:00:00`));
+    }
+
+    rerenderAll();
+    return;
+  }
+
+  const removeButton = event.target.closest(".remove-special-hours-button");
+  if (!removeButton) {
+    return;
+  }
+
+  state.specialHours = state.specialHours.filter((item) => item.id !== removeButton.dataset.specialId);
+  saveState();
+  rerenderAll();
+});
+
+blockedSlotsForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const blockedDate = String(blockedSlotsForm.elements.blockedDate.value || "").trim();
+  const blockedTime = String(blockedSlotsForm.elements.blockedTime.value || "").trim();
+  const note = String(blockedSlotsForm.elements.blockedNote.value || "").trim();
+
+  if (!blockedDate || !blockedTime) {
+    alert("צריך לבחור תאריך ושעה לחסימה.");
+    return;
+  }
+
+  if (!getWorkingDaySlotTimes(blockedDate).includes(blockedTime)) {
+    alert("השעה שבחרת לא תואמת לשעות הפעילות של אותו יום.");
+    return;
+  }
+
+  if (isSlotBlocked(blockedDate, blockedTime)) {
+    alert("השעה הזאת כבר חסומה.");
+    return;
+  }
+
+  state.blockedSlots.push({
+    id: `blocked-slot-${Date.now()}`,
+    blocked_date: blockedDate,
+    blocked_time: blockedTime,
+    note
+  });
+
+  state.blockedSlots = normalizeBlockedSlots(state.blockedSlots);
+  uiState.blockedSlotDate = blockedDate;
+  uiState.sellerCalendarDate = blockedDate;
+  uiState.sellerCalendarMonthKey = monthKey(new Date(`${blockedDate}T00:00:00`));
+  blockedSlotsForm.reset();
+  saveState();
+  rerenderAll();
+});
+
+blockedSlotsList.addEventListener("click", (event) => {
+  const target = event.target.closest(".unblock-slot-button");
+  if (!target) {
+    return;
+  }
+
+  state.blockedSlots = state.blockedSlots.filter((slot) => slot.id !== target.dataset.blockedSlotId);
+  saveState();
+  rerenderAll();
 });
 
 sellerBookingsList.addEventListener("click", (event) => {
@@ -759,8 +1432,24 @@ sellerBookingsList.addEventListener("click", (event) => {
     return;
   }
 
-  if (target.classList.contains("google-calendar-button")) {
-    openGoogleCalendarForBooking(booking);
+  if (target.classList.contains("calendar-choice-button")) {
+    openCalendarChoiceModal(booking.id);
+    return;
+  }
+
+  if (target.classList.contains("seller-cancel-booking-button")) {
+    if (!["pending", "approved"].includes(booking.status)) {
+      return;
+    }
+
+    if (!window.confirm("האם לבטל את התור הזה?")) {
+      return;
+    }
+
+    clearRejectUndo(false);
+    booking.status = "cancelled";
+    saveState();
+    rerenderAll();
     return;
   }
 
@@ -787,15 +1476,80 @@ sellerBookingsList.addEventListener("click", (event) => {
   rerenderAll();
 });
 
-businessForm.addEventListener("submit", (event) => {
+businessForm.addEventListener("click", (event) => {
+  const clearButton = event.target.closest("[data-clear-image]");
+  if (!clearButton) {
+    return;
+  }
+
+  if (clearButton.dataset.clearImage === "cover") {
+    state.business.cover_image = "";
+  }
+
+  if (clearButton.dataset.clearImage === "profile") {
+    state.business.profile_image = "";
+  }
+
+  saveState();
+  rerenderAll();
+});
+
+businessForm.addEventListener("change", async (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) || target.type !== "file") {
+    return;
+  }
+
+  const file = target.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    const imageDataUrl = await readFileAsDataUrl(file);
+
+    if (target.name === "coverImageFile") {
+      ownerCoverPreview.style.backgroundImage = `linear-gradient(rgba(110, 70, 118, 0.18), rgba(110, 70, 118, 0.18)), url("${imageDataUrl}")`;
+    }
+
+    if (target.name === "profileImageFile") {
+      ownerAvatarPreview.style.backgroundImage = `url("${imageDataUrl}")`;
+    }
+  } catch (error) {
+    alert("לא הצלחנו לקרוא את קובץ התמונה. נסי לבחור קובץ אחר.");
+  }
+});
+
+businessForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+
+  let coverImage = state.business.cover_image;
+  let profileImage = state.business.profile_image;
+
+  try {
+    coverImage = await resolveBusinessImage({
+      currentValue: state.business.cover_image,
+      file: businessForm.elements.coverImageFile.files?.[0]
+    });
+
+    profileImage = await resolveBusinessImage({
+      currentValue: state.business.profile_image,
+      file: businessForm.elements.profileImageFile.files?.[0]
+    });
+  } catch (error) {
+    alert("לא הצלחנו לשמור את התמונות. נסי שוב עם קובץ אחר.");
+    return;
+  }
+
   state.business = {
     ...state.business,
     name: String(businessForm.elements.name.value).trim(),
     description: String(businessForm.elements.description.value).trim(),
     address: String(businessForm.elements.address.value).trim(),
     phone: String(businessForm.elements.phone.value).trim(),
-    instagram_url: normalizeInstagramUrl(businessForm.elements.instagramUrl.value)
+    instagram_url: normalizeInstagramUrl(businessForm.elements.instagramUrl.value),
+    cover_image: coverImage,
+    profile_image: profileImage
   };
   saveState();
   rerenderAll();
@@ -824,7 +1578,7 @@ sellerCredentialsForm.addEventListener("submit", (event) => {
 addServiceButton.addEventListener("click", () => {
   state.services.push({
     id: `service-${Date.now()}`,
-    category: "טיפולי ידיים",
+    category: "קטגוריה ראשית",
     name: "שירות חדש",
     price: 0,
     duration: 30
@@ -907,7 +1661,9 @@ hoursForm.addEventListener("submit", (event) => {
   rerenderAll();
 });
 
-if (sessionStorage.getItem(SELLER_SESSION_KEY) === "1") {
+if (isSellerRemembered()) {
+  rememberSellerSession();
+  sessionStorage.setItem(SELLER_SESSION_KEY, "1");
   showOwnerLayout();
 } else {
   showOwnerLogin();

@@ -104,6 +104,8 @@ textarea {
   background:
     linear-gradient(rgba(110, 70, 118, 0.18), rgba(110, 70, 118, 0.18)),
     linear-gradient(120deg, #d7cdf9 0%, #f9d9d5 35%, #eedff6 62%, #b986d8 100%);
+  background-position: center;
+  background-size: cover;
 }
 
 .landing-content {
@@ -122,6 +124,8 @@ textarea {
     radial-gradient(circle at 42% 30%, #fefcff 0%, #f2e7e7 28%, transparent 29%),
     linear-gradient(115deg, #d5e0ff 0%, #fff5f8 40%, #d3b5dd 70%, #88504e 100%);
   box-shadow: 0 12px 26px rgba(39, 25, 55, 0.16);
+  background-position: center;
+  background-size: cover;
 }
 
 .landing-content h1 {
@@ -174,6 +178,11 @@ textarea {
   gap: 4px;
   color: var(--muted);
   font-size: 14px;
+}
+
+.business-phone-text {
+  direction: ltr;
+  unicode-bidi: plaintext;
 }
 
 .wizard-card,
@@ -667,6 +676,44 @@ textarea {
   border-top: 1px solid var(--line);
 }
 
+.change-mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border: 1px solid #d8c0f1;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fbf5ff, #f6ecfd);
+}
+
+.change-mode-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.change-mode-copy strong {
+  font-size: 17px;
+  color: var(--accent-dark);
+}
+
+.change-mode-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.change-request-strip {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d8c0f1;
+  border-radius: 16px;
+  background: #faf3ff;
+  color: var(--accent-dark);
+  line-height: 1.6;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -770,6 +817,24 @@ textarea {
   border-color: #d8dde7;
 }
 
+.status-completed {
+  background: #e5f5f0;
+  color: #1f7b5a;
+  border-color: #bfe3d6;
+}
+
+.status-blocked {
+  background: #efe6fb;
+  color: var(--accent-dark);
+  border-color: #d8c0f1;
+}
+
+.status-special {
+  background: #e7eefc;
+  color: #3152a1;
+  border-color: #c7d6fa;
+}
+
 .status-card-pending {
   box-shadow: inset 4px 0 0 #e1c65b;
 }
@@ -786,6 +851,18 @@ textarea {
   box-shadow: inset 4px 0 0 #8b93a3;
 }
 
+.status-card-completed {
+  box-shadow: inset 4px 0 0 #2b8a69;
+}
+
+.status-card-blocked {
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.status-card-special {
+  box-shadow: inset 4px 0 0 #6f8be8;
+}
+
 .booking-meta,
 .seller-actions,
 .booking-card-actions {
@@ -793,6 +870,56 @@ textarea {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 12px;
+}
+
+.customer-bookings-toolbar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.customer-bookings-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 58px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-soft);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.customer-bookings-filter:hover {
+  transform: translateY(-1px);
+  border-color: #d7c1e6;
+  background: #fff;
+}
+
+.customer-bookings-filter strong {
+  min-width: 32px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 13px;
+}
+
+.customer-bookings-filter.is-active {
+  border-color: #dcc2e9;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(178, 95, 209, 0.12);
+}
+
+.customer-bookings-filter.is-active strong {
+  background: var(--accent-soft);
+  border-color: #e0c7ec;
+  color: var(--accent-dark);
 }
 
 .success-panel-actions {
@@ -803,6 +930,104 @@ textarea {
 
 .success-panel-actions .ghost-button {
   min-width: 180px;
+}
+
+.calendar-choice-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.calendar-choice-cancel {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.business-media-editor {
+  display: grid;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.blocked-slot-form,
+.special-hours-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.blocked-slot-form-grid,
+.special-hours-form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.blocked-slot-note-field,
+.special-hours-note-field {
+  grid-column: 1 / -1;
+}
+
+.blocked-slots-list,
+.special-hours-list {
+  margin-top: 18px;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.checkbox-field input {
+  width: 18px;
+  height: 18px;
+}
+
+.special-hours-closed-field .checkbox-field {
+  justify-content: flex-start;
+}
+
+.business-media-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-soft);
+}
+
+.business-media-card h4 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.business-media-preview {
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(rgba(110, 70, 118, 0.18), rgba(110, 70, 118, 0.18)),
+    linear-gradient(120deg, #d7cdf9 0%, #f9d9d5 35%, #eedff6 62%, #b986d8 100%);
+  background-position: center;
+  background-size: cover;
+}
+
+.business-media-preview-cover {
+  min-height: 132px;
+  border-radius: 20px;
+}
+
+.business-media-preview-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  justify-self: center;
+  border-width: 4px;
+  border-color: #fff;
+  box-shadow: 0 12px 26px rgba(39, 25, 55, 0.16);
 }
 
 .undo-strip {
@@ -1087,6 +1312,19 @@ textarea {
   .admin-card-wide {
     grid-column: 1 / -1;
   }
+
+  .business-media-editor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-choice-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blocked-slot-form-grid,
+  .special-hours-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 719px) {
@@ -1110,13 +1348,34 @@ textarea {
     width: 100%;
   }
 
+  .change-mode-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .staff-grid,
   .services-grid,
   .time-slots-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .customer-bookings-filter {
+    min-height: 52px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .customer-bookings-filter strong {
+    min-width: 28px;
+    padding-inline: 6px;
+  }
+
   .editor-row {
+    grid-template-columns: 1fr;
+  }
+
+  .blocked-slot-form-grid,
+  .special-hours-form-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1132,5 +1391,15 @@ textarea {
 
   .owner-sidebar {
     position: static;
+  }
+}
+
+@media (min-width: 1024px) {
+  .blocked-slot-form-grid {
+    grid-template-columns: 1fr 1fr 1.2fr;
+  }
+
+  .special-hours-form-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
