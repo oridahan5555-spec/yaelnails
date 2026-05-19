@@ -14,8 +14,8 @@ const DEFAULT_DATA = {
   business: {
     name: "שם העסק שלך",
     description: "כתבי כאן תיאור קצר על העסק שלך.",
-    address: "כתובת העסק",
-    phone: "",
+    address: "נחל צלמון 12",
+    phone: "058-560-9500",
     instagram_url: "",
     cover_image: "",
     profile_image: ""
