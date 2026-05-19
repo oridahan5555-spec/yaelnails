@@ -1,5 +1,6 @@
 const LOCAL_STORAGE_KEY = "booking_app_local_working_v2";
 const SELLER_SESSION_KEY = "booking_app_seller_session_v1";
+const CUSTOMER_SESSION_KEY = "booking_app_customer_session_v1";
 const REJECT_UNDO_WINDOW_MS = 5000;
 const DEFAULT_OWNER_STAFF = {
   id: "staff-owner",
@@ -11,34 +12,35 @@ const DEFAULT_OWNER_STAFF = {
 
 const DEFAULT_DATA = {
   business: {
-    name: "Yael nails",
-    description: "תיאור קצר של העסק.",
-    address: "נחל צלמון 12",
-    phone: "058-560-9500",
-    instagram_url: ""
+    name: "שם העסק שלך",
+    description: "כתבי כאן תיאור קצר על העסק שלך.",
+    address: "כתובת העסק",
+    phone: "",
+    instagram_url: "",
+    cover_image: "",
+    profile_image: ""
   },
   sellerCredentials: {
-    username: "seller",
+    username: "admin",
     password: "1234"
   },
   services: [
-    { id: "service-1", category: "טיפולי ידיים", name: "בניה בטיפס הפוך", price: 230, duration: 120 },
-    { id: "service-2", category: "טיפולי ידיים", name: "לק ג'ל + מבנה אנטומי", price: 110, duration: 90 },
-    { id: "service-3", category: "טיפולי ידיים", name: "הסרה לק גל", price: 20, duration: 20 },
-    { id: "service-4", category: "טיפולי ידיים", name: "ציור", price: 10, duration: 10 },
-    { id: "service-5", category: "טיפולי ידיים", name: "פרנץ", price: 10, duration: 10 },
-    { id: "service-6", category: "טיפולי ידיים", name: "השלמה", price: 10, duration: 30 }
+    { id: "service-1", category: "קטגוריה ראשית", name: "שירות לדוגמה 1", price: 150, duration: 60 },
+    { id: "service-2", category: "קטגוריה ראשית", name: "שירות לדוגמה 2", price: 220, duration: 90 },
+    { id: "service-3", category: "קטגוריה נוספת", name: "שירות לדוגמה 3", price: 80, duration: 30 }
   ],
   staff: [DEFAULT_OWNER_STAFF],
   workingHours: [
-    { id: "hours-0", day_of_week: 0, day_label: "ראשון", opens_at: "17:00", closes_at: "20:00", slot_interval_minutes: 30, is_closed: false },
-    { id: "hours-1", day_of_week: 1, day_label: "שני", opens_at: "15:40", closes_at: "20:00", slot_interval_minutes: 20, is_closed: false },
-    { id: "hours-2", day_of_week: 2, day_label: "שלישי", opens_at: "15:00", closes_at: "20:00", slot_interval_minutes: 30, is_closed: false },
-    { id: "hours-3", day_of_week: 3, day_label: "רביעי", opens_at: null, closes_at: null, slot_interval_minutes: 30, is_closed: true },
-    { id: "hours-4", day_of_week: 4, day_label: "חמישי", opens_at: "15:30", closes_at: "20:00", slot_interval_minutes: 30, is_closed: false },
-    { id: "hours-5", day_of_week: 5, day_label: "שישי", opens_at: null, closes_at: null, slot_interval_minutes: 30, is_closed: true },
+    { id: "hours-0", day_of_week: 0, day_label: "ראשון", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-1", day_of_week: 1, day_label: "שני", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-2", day_of_week: 2, day_label: "שלישי", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-3", day_of_week: 3, day_label: "רביעי", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-4", day_of_week: 4, day_label: "חמישי", opens_at: "09:00", closes_at: "18:00", slot_interval_minutes: 30, is_closed: false },
+    { id: "hours-5", day_of_week: 5, day_label: "שישי", opens_at: "09:00", closes_at: "14:00", slot_interval_minutes: 30, is_closed: false },
     { id: "hours-6", day_of_week: 6, day_label: "שבת", opens_at: null, closes_at: null, slot_interval_minutes: 30, is_closed: true }
   ],
+  specialHours: [],
+  blockedSlots: [],
   bookings: [],
   users: []
 };
@@ -52,11 +54,14 @@ const uiState = {
   selectedDate: "",
   selectedTime: "",
   selectedMonthKey: monthKey(new Date()),
+  customerBookingsView: "active",
   sellerCalendarDate: todayDate(),
   sellerCalendarMonthKey: monthKey(new Date()),
+  replacementBookingId: null,
   rejectUndoBookingId: null,
   rejectUndoPreviousStatus: null,
-  rejectUndoTimeoutId: null
+  rejectUndoTimeoutId: null,
+  calendarChoiceBookingId: null
 };
 
 const session = {
@@ -65,13 +70,16 @@ const session = {
 };
 
 const brandName = document.getElementById("brandName");
+const businessCoverImage = document.getElementById("businessCoverImage");
+const businessAvatar = document.getElementById("businessAvatar");
 const businessName = document.getElementById("businessName");
 const businessDescription = document.getElementById("businessDescription");
 const businessAddress = document.getElementById("businessAddress");
+const businessPhoneText = document.getElementById("businessPhoneText");
 const whatsAppLink = document.getElementById("whatsAppLink");
 const phoneLink = document.getElementById("phoneLink");
 const instagramLink = document.getElementById("instagramLink");
-
+const wazeLink = document.getElementById("wazeLink");
 
 const wizardSteps = document.querySelectorAll("[data-step-indicator]");
 const servicesStep = document.getElementById("servicesStep");
@@ -92,11 +100,18 @@ const todaySlotsList = document.getElementById("todaySlotsList");
 const bookingSummaryCard = document.getElementById("bookingSummaryCard");
 const detailsNotice = document.getElementById("detailsNotice");
 const bookingSuccessPanel = document.getElementById("bookingSuccessPanel");
+const bookingSuccessTitle = document.getElementById("bookingSuccessTitle");
+const bookingSuccessText = document.getElementById("bookingSuccessText");
 const bookingSuccessSummary = document.getElementById("bookingSuccessSummary");
 const bookingSuccessCalendarButton = document.getElementById("bookingSuccessCalendarButton");
-const bookingSuccessIcsButton = document.getElementById("bookingSuccessIcsButton");
+const bookingSubmitButton = document.getElementById("bookingSubmitButton");
+const changeModeBanner = document.getElementById("changeModeBanner");
+const changeModeText = document.getElementById("changeModeText");
+const cancelChangeModeButton = document.getElementById("cancelChangeModeButton");
 const bookingForm = document.getElementById("bookingForm");
 const customerBookingsPanel = document.getElementById("customerBookingsPanel");
+const customerBookingsFilters = document.getElementById("customerBookingsFilters");
+const customerBookingCountBadges = document.querySelectorAll("[data-booking-count]");
 const myBookingsList = document.getElementById("myBookingsList");
 const sellerPanel = document.getElementById("sellerPanel");
 const sellerCalendarPrevButton = document.getElementById("sellerCalendarPrevButton");
@@ -114,6 +129,11 @@ const closeModal = document.getElementById("closeModal");
 const modalTabs = document.querySelectorAll(".modal-tab");
 const customerLoginForm = document.getElementById("customerLoginForm");
 const sellerLoginForm = document.getElementById("sellerLoginForm");
+const calendarChoiceModal = document.getElementById("calendarChoiceModal");
+const closeCalendarChoiceModal = document.getElementById("closeCalendarChoiceModal");
+const deviceCalendarButton = document.getElementById("deviceCalendarButton");
+const googleCalendarButton = document.getElementById("googleCalendarButton");
+const cancelCalendarChoiceButton = document.getElementById("cancelCalendarChoiceButton");
 
 const goToStaffStep = document.getElementById("goToStaffStep");
 const goToScheduleStep = document.getElementById("goToScheduleStep");
@@ -149,6 +169,8 @@ function loadState() {
       services: Array.isArray(parsed.services) && parsed.services.length ? parsed.services : defaults.services,
       staff: Array.isArray(parsed.staff) && parsed.staff.length ? parsed.staff : defaults.staff,
       workingHours: Array.isArray(parsed.workingHours) && parsed.workingHours.length ? parsed.workingHours : defaults.workingHours,
+      specialHours: normalizeSpecialHours(parsed.specialHours),
+      blockedSlots: normalizeBlockedSlots(parsed.blockedSlots),
       bookings: Array.isArray(parsed.bookings) ? parsed.bookings : [],
       users: Array.isArray(parsed.users) ? parsed.users : []
     };
@@ -170,32 +192,84 @@ function saveState() {
       services: state.services,
       staff: state.staff,
       workingHours: state.workingHours,
+      specialHours: state.specialHours,
+      blockedSlots: state.blockedSlots,
       bookings: state.bookings,
       users: state.users
     })
   );
 }
 
+function rememberCustomerSession(phone) {
+  localStorage.setItem(
+    CUSTOMER_SESSION_KEY,
+    JSON.stringify({
+      phone: normalizePhoneNumber(phone)
+    })
+  );
+}
+
+function clearRememberedCustomerSession() {
+  localStorage.removeItem(CUSTOMER_SESSION_KEY);
+}
+
+function rememberSellerSession() {
+  localStorage.setItem(SELLER_SESSION_KEY, "1");
+}
+
+function isSellerRemembered() {
+  return localStorage.getItem(SELLER_SESSION_KEY) === "1" || sessionStorage.getItem(SELLER_SESSION_KEY) === "1";
+}
+
+function restoreRememberedCustomerSession() {
+  try {
+    const raw = localStorage.getItem(CUSTOMER_SESSION_KEY);
+    if (!raw) {
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    const rememberedPhone = normalizePhoneNumber(parsed?.phone);
+    if (!rememberedPhone) {
+      clearRememberedCustomerSession();
+      return;
+    }
+
+    const existingUser = state.users.find((user) => isSamePhone(user.phone, rememberedPhone));
+    if (!existingUser) {
+      clearRememberedCustomerSession();
+      return;
+    }
+
+    session.role = "customer";
+    session.customerPhone = rememberedPhone;
+  } catch (error) {
+    clearRememberedCustomerSession();
+  }
+}
+
 function normalizeBusiness(business) {
   const normalized = { ...business };
 
-  if (!normalized.name || normalized.name === "שם העסק" || normalized.phone === "058-560-9500") {
+  if (!normalized.name || normalized.name === "שם העסק") {
     normalized.name = DEFAULT_DATA.business.name;
   }
 
-  if (!normalized.description || normalized.description === "מניקור, ג'ל ובנייה באווירה נקייה, רגועה ומדויקת.") {
+  if (!normalized.description || normalized.description === "תיאור קצר של העסק." || normalized.description === "מניקור, ג'ל ובנייה באווירה נקייה, רגועה ומדויקת.") {
     normalized.description = DEFAULT_DATA.business.description;
   }
 
-  if (!normalized.address) {
+  if (!normalized.address || normalized.address === "כתובת העסק" || normalized.address === "נחל צלמון 12") {
     normalized.address = DEFAULT_DATA.business.address;
   }
 
-  if (!normalized.phone) {
+  if (!normalized.phone || normalized.phone === "058-560-9500") {
     normalized.phone = DEFAULT_DATA.business.phone;
   }
 
   normalized.instagram_url = normalizeInstagramUrl(normalized.instagram_url);
+  normalized.cover_image = String(normalized.cover_image || "").trim();
+  normalized.profile_image = String(normalized.profile_image || "").trim();
   return normalized;
 }
 
@@ -212,10 +286,77 @@ function normalizeBookings(bookings, staff, services) {
     return {
       ...booking,
       duration_minutes: Number(booking.duration_minutes || service?.duration || 30),
+      hidden_for_customer: Boolean(booking.hidden_for_customer),
       staff_id: assignedStaff.id,
       staff_name: assignedStaff.name
     };
   });
+}
+
+function normalizeBlockedSlots(blockedSlots) {
+  if (!Array.isArray(blockedSlots)) {
+    return [];
+  }
+
+  const seen = new Set();
+
+  return blockedSlots
+    .map((slot, index) => ({
+      id: String(slot?.id || `blocked-slot-${Date.now()}-${index}`),
+      blocked_date: String(slot?.blocked_date || "").trim(),
+      blocked_time: String(slot?.blocked_time || "").trim().slice(0, 5),
+      note: String(slot?.note || "").trim()
+    }))
+    .filter((slot) => slot.blocked_date && /^\d{2}:\d{2}$/.test(slot.blocked_time))
+    .filter((slot) => {
+      const key = `${slot.blocked_date}|${slot.blocked_time}`;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => `${left.blocked_date} ${left.blocked_time}`.localeCompare(`${right.blocked_date} ${right.blocked_time}`));
+}
+
+function normalizeSpecialHours(specialHours) {
+  if (!Array.isArray(specialHours)) {
+    return [];
+  }
+
+  const seen = new Set();
+
+  return specialHours
+    .map((item, index) => ({
+      id: String(item?.id || `special-hours-${Date.now()}-${index}`),
+      special_date: String(item?.special_date || "").trim(),
+      opens_at: String(item?.opens_at || "").trim().slice(0, 5) || null,
+      closes_at: String(item?.closes_at || "").trim().slice(0, 5) || null,
+      slot_interval_minutes: Number(item?.slot_interval_minutes || 30),
+      is_closed: Boolean(item?.is_closed),
+      note: String(item?.note || "").trim()
+    }))
+    .filter((item) => item.special_date)
+    .filter((item) => {
+      if (!item.is_closed && (!/^\d{2}:\d{2}$/.test(String(item.opens_at || "")) || !/^\d{2}:\d{2}$/.test(String(item.closes_at || "")))) {
+        return false;
+      }
+
+      if (item.is_closed) {
+        item.opens_at = null;
+        item.closes_at = null;
+      }
+
+      const key = item.special_date;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => left.special_date.localeCompare(right.special_date));
 }
 
 function localDateValue(date) {
@@ -308,6 +449,65 @@ function getBookingEndTime(booking) {
   return formatMinutesToTime(startMinutes + Number(booking.duration_minutes || 30));
 }
 
+function buildBookingDateTime(dateValue, timeValue) {
+  const safeTime = String(timeValue || "00:00").slice(0, 5);
+  return new Date(`${dateValue}T${safeTime}:00`);
+}
+
+function getBookingEndDateTime(booking) {
+  const startDateTime = buildBookingDateTime(booking.booking_date, booking.booking_time);
+  if (Number.isNaN(startDateTime.getTime())) {
+    return null;
+  }
+
+  return new Date(startDateTime.getTime() + Number(booking.duration_minutes || 30) * 60000);
+}
+
+function escapeIcsText(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\r?\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function buildCalendarFileName(booking) {
+  const businessPart = String(state.business.name || "booking")
+    .trim()
+    .replace(/[<>:"/\\|?*]+/g, "")
+    .replace(/\s+/g, "-");
+
+  return `${businessPart || "booking"}-${booking.booking_date}-${String(booking.booking_time).replace(":", "-")}.ics`;
+}
+
+function buildDeviceCalendarContent(booking) {
+  const customerName = [booking.customer_first_name, booking.customer_last_name].filter(Boolean).join(" ").trim();
+  const descriptionLines = [
+    `שירות: ${booking.service_name}`,
+    `סטטוס: ${formatStatus(booking.status)}`,
+    customerName ? `לקוחה: ${customerName}` : "",
+    booking.customer_phone ? `טלפון: ${booking.customer_phone}` : "",
+    booking.notes ? `הערות: ${booking.notes}` : ""
+  ].filter(Boolean);
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Booking App//HE",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${booking.id}@local-booking-app`,
+    `DTSTAMP:${formatIcsDateTime(todayDate(), "00:00")}`,
+    `DTSTART:${formatIcsDateTime(booking.booking_date, booking.booking_time)}`,
+    `DTEND:${formatIcsDateTime(booking.booking_date, getBookingEndTime(booking))}`,
+    `SUMMARY:${escapeIcsText(`${state.business.name} - ${booking.service_name}`)}`,
+    `DESCRIPTION:${escapeIcsText(descriptionLines.join("\n"))}`,
+    `LOCATION:${escapeIcsText(state.business.address || "")}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+}
+
 function buildGoogleCalendarUrl(booking) {
   const businessTitle = String(state.business.name || DEFAULT_DATA.business.name).trim() || DEFAULT_DATA.business.name;
   const customerName = [booking.customer_first_name, booking.customer_last_name].filter(Boolean).join(" ").trim();
@@ -343,54 +543,65 @@ function openGoogleCalendarForBooking(booking) {
   }
 }
 
-function buildIcsForBooking(booking) {
-  const businessTitle = String(state.business.name || DEFAULT_DATA.business.name).trim() || DEFAULT_DATA.business.name;
-  const customerName = [booking.customer_first_name, booking.customer_last_name].filter(Boolean).join(" ").trim();
-  const descriptionLines = [
-    `שירות: ${booking.service_name}`,
-    `סטטוס: ${formatStatus(booking.status)}`,
-    customerName ? `לקוחה: ${customerName}` : "",
-    booking.customer_phone ? `טלפון: ${booking.customer_phone}` : "",
-    booking.notes ? `הערות: ${booking.notes}` : ""
-  ].filter(Boolean).join("\\n");
-  const dtStart = formatIcsDateTime(booking.booking_date, booking.booking_time);
-  const dtEnd = formatIcsDateTime(booking.booking_date, getBookingEndTime(booking));
-  const dtStamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-  const uid = `booking-${booking.id}@yaelnails`;
-  const escapeText = (s) => String(s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//YaelNails//Booking//HE",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${dtStamp}`,
-    `DTSTART:${dtStart}`,
-    `DTEND:${dtEnd}`,
-    `SUMMARY:${escapeText(`${businessTitle} - ${booking.service_name}`)}`,
-    `DESCRIPTION:${escapeText(descriptionLines)}`,
-    `LOCATION:${escapeText(state.business.address || "")}`,
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ].join("\r\n");
-}
+function downloadDeviceCalendar(booking) {
+  if (!booking) {
+    return;
+  }
 
-function downloadIcsForBooking(booking) {
-  if (!booking) return;
-  const ics = buildIcsForBooking(booking);
-  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+  const file = new Blob([buildDeviceCalendarContent(booking)], {
+    type: "text/calendar;charset=utf-8"
+  });
   const link = document.createElement("a");
-  link.href = url;
-  link.download = `appointment-${booking.booking_date}.ics`;
+  link.href = URL.createObjectURL(file);
+  link.download = buildCalendarFileName(booking);
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+function openCalendarChoiceModal(bookingId) {
+  uiState.calendarChoiceBookingId = bookingId;
+  calendarChoiceModal.classList.remove("is-hidden");
+}
+
+function closeCalendarChoice() {
+  uiState.calendarChoiceBookingId = null;
+  calendarChoiceModal.classList.add("is-hidden");
 }
 
 function findBookingById(bookingId) {
   return state.bookings.find((booking) => booking.id === bookingId) || null;
+}
+
+function getReplacementSourceBooking() {
+  if (!uiState.replacementBookingId) {
+    return null;
+  }
+
+  return findBookingById(uiState.replacementBookingId);
+}
+
+function findPendingChangeRequestForBooking(bookingId) {
+  return state.bookings.find((booking) => booking.replaces_booking_id === bookingId && booking.status === "pending") || null;
+}
+
+function finalizeApprovedChangeRequest(booking) {
+  if (!booking?.replaces_booking_id) {
+    return;
+  }
+
+  const oldBooking = findBookingById(booking.replaces_booking_id);
+  if (!oldBooking || !["pending", "approved"].includes(oldBooking.status)) {
+    return;
+  }
+
+  oldBooking.status = "cancelled";
+  oldBooking.replaced_by_id = booking.id;
+}
+
+function clearReplacementBooking() {
+  uiState.replacementBookingId = null;
 }
 
 function clearRejectUndo(shouldRerender = false) {
@@ -439,6 +650,81 @@ function getCurrentCustomer() {
   return state.users.find((user) => isSamePhone(user.phone, session.customerPhone)) || null;
 }
 
+function getCustomerBookingsForSession() {
+  if (!session.customerPhone) {
+    return [];
+  }
+
+  return state.bookings.filter(
+    (booking) => isSamePhone(booking.customer_phone, session.customerPhone) && !booking.hidden_for_customer
+  );
+}
+
+function getCustomerBookingBucket(booking) {
+  if (["cancelled", "rejected"].includes(booking.status)) {
+    return "cancelled";
+  }
+
+  if (booking.status === "approved") {
+    const bookingEndDateTime = getBookingEndDateTime(booking);
+    if (bookingEndDateTime && bookingEndDateTime.getTime() < Date.now()) {
+      return "completed";
+    }
+  }
+
+  return "active";
+}
+
+function getCustomerBookingPresentation(booking) {
+  const bucket = getCustomerBookingBucket(booking);
+  if (bucket === "completed") {
+    return {
+      bucket,
+      statusClass: "completed",
+      statusLabel: "הושלם"
+    };
+  }
+
+  return {
+    bucket,
+    statusClass: booking.status,
+    statusLabel: formatStatus(booking.status)
+  };
+}
+
+function getCustomerEmptyMessage(viewName) {
+  if (viewName === "completed") {
+    return "עדיין אין תורים שהושלמו.";
+  }
+
+  if (viewName === "cancelled") {
+    return "עדיין אין תורים שבוטלו או נדחו.";
+  }
+
+  return "כרגע אין תורים פעילים.";
+}
+
+function updateCustomerBookingsFilterUi(groupedBookings) {
+  if (!customerBookingsFilters) {
+    return;
+  }
+
+  const counts = {
+    active: groupedBookings.active.length,
+    completed: groupedBookings.completed.length,
+    cancelled: groupedBookings.cancelled.length
+  };
+
+  customerBookingsFilters.querySelectorAll("[data-booking-view]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.bookingView === uiState.customerBookingsView);
+  });
+
+  customerBookingCountBadges.forEach((badge) => {
+    const key = badge.dataset.bookingCount;
+    badge.textContent = String(counts[key] || 0);
+  });
+}
+
 function parseFullName(fullName) {
   const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
   if (!parts.length) {
@@ -455,25 +741,41 @@ function parseFullName(fullName) {
 
 function hideBookingSuccess() {
   bookingSuccessPanel.classList.add("is-hidden");
+  bookingSuccessTitle.textContent = "ההזמנה נשלחה בהצלחה";
+  bookingSuccessText.textContent = "הבקשה נשמרה ומחכה לאישור של בעלת העסק.";
   bookingSuccessSummary.innerHTML = "";
   bookingSuccessCalendarButton.classList.add("is-hidden");
-  bookingSuccessIcsButton.classList.add("is-hidden");
   delete bookingSuccessCalendarButton.dataset.bookingId;
-  delete bookingSuccessIcsButton.dataset.bookingId;
 }
 
 function showBookingSuccess(booking) {
+  const isChangeRequest = Boolean(booking.replaces_booking_id);
   bookingSuccessSummary.innerHTML = `
     <div class="summary-row"><span>שירות</span><strong>${booking.service_name}</strong></div>
     <div class="summary-row"><span>אשת צוות</span><strong>${booking.staff_name}</strong></div>
     <div class="summary-row"><span>תאריך</span><strong>${formatDisplayDate(booking.booking_date)}</strong></div>
     <div class="summary-row"><span>שעה</span><strong>${booking.booking_time}</strong></div>
   `;
+  bookingSuccessTitle.textContent = isChangeRequest ? "בקשת שינוי התור נשלחה" : "ההזמנה נשלחה בהצלחה";
+  bookingSuccessText.textContent = isChangeRequest
+    ? "בקשת השינוי נשמרה. התור הישן נשאר שמור עד שבעלת העסק תאשר את התור החדש."
+    : "הבקשה נשמרה ומחכה לאישור של בעלת העסק.";
   bookingSuccessCalendarButton.dataset.bookingId = booking.id;
   bookingSuccessCalendarButton.classList.remove("is-hidden");
-  bookingSuccessIcsButton.dataset.bookingId = booking.id;
-  bookingSuccessIcsButton.classList.remove("is-hidden");
   bookingSuccessPanel.classList.remove("is-hidden");
+}
+
+function renderChangeModeBanner() {
+  const sourceBooking = getReplacementSourceBooking();
+
+  if (!sourceBooking || !["pending", "approved"].includes(sourceBooking.status)) {
+    changeModeBanner.classList.add("is-hidden");
+    changeModeText.textContent = "כאן משנים תור קיים בלי לאבד את התור הישן עד לאישור.";
+    return;
+  }
+
+  changeModeText.textContent = `משנים עכשיו את התור הקיים של ${formatDisplayDate(sourceBooking.booking_date)} בשעה ${sourceBooking.booking_time}. התור הישן נשאר שמור עד לאישור התור החדש.`;
+  changeModeBanner.classList.remove("is-hidden");
 }
 
 function updateContactLinks() {
@@ -482,7 +784,7 @@ function updateContactLinks() {
 
   whatsAppLink.href = phoneNumber ? `https://wa.me/${phoneNumber}` : "#";
   phoneLink.href = phoneNumber ? `tel:${phoneNumber}` : "#";
-  
+  wazeLink.href = `https://waze.com/ul?q=${encodeURIComponent(state.business.address || "")}`;
 
   instagramLink.classList.toggle("is-hidden", !instagramUrl);
   if (instagramUrl) {
@@ -496,12 +798,28 @@ function updateContactLinks() {
   }
 }
 
+function applyBusinessImages() {
+  const coverImage = String(state.business.cover_image || "").trim();
+  const profileImage = String(state.business.profile_image || "").trim();
+
+  businessCoverImage.style.backgroundImage = coverImage
+    ? `linear-gradient(rgba(110, 70, 118, 0.18), rgba(110, 70, 118, 0.18)), url("${coverImage}")`
+    : "";
+
+  businessAvatar.style.backgroundImage = profileImage
+    ? `url("${profileImage}")`
+    : "";
+}
+
 function renderBusiness() {
   brandName.textContent = state.business.name;
   businessName.textContent = state.business.name;
   businessDescription.textContent = state.business.description;
   businessAddress.textContent = state.business.address;
+  businessPhoneText.textContent = state.business.phone;
+  businessPhoneText.classList.toggle("is-hidden", !state.business.phone);
   updateContactLinks();
+  applyBusinessImages();
 }
 
 function renderWizardSteps() {
@@ -580,6 +898,7 @@ function renderSelectedSummary() {
     <div class="selected-summary-row"><span>מחיר</span><strong>${formatPrice(service.price)}</strong></div>
     <div class="selected-summary-row"><span>משך</span><strong>${service.duration} דקות</strong></div>
     <div class="selected-summary-row"><span>צוות</span><strong>${staff.name}</strong></div>
+    ${uiState.replacementBookingId ? '<div class="selected-summary-row"><span>מצב</span><strong>שינוי תור קיים</strong></div>' : ""}
   `;
 }
 
@@ -594,12 +913,38 @@ function renderBookingSummary() {
     <div class="summary-row"><span>אשת צוות</span><strong>${staff ? staff.name : "-"}</strong></div>
     <div class="summary-row"><span>תאריך</span><strong>${dateText}</strong></div>
     <div class="summary-row"><span>שעה</span><strong>${timeText}</strong></div>
+    ${uiState.replacementBookingId ? '<div class="summary-row"><span>סוג פעולה</span><strong>שינוי תור קיים</strong></div>' : ""}
   `;
 }
 
-function findWorkingHoursForDate(dateValue) {
+function findRegularWorkingHoursForDate(dateValue) {
   const dayOfWeek = new Date(`${dateValue}T00:00:00`).getDay();
   return state.workingHours.find((entry) => Number(entry.day_of_week) === dayOfWeek) || null;
+}
+
+function findSpecialHoursForDate(dateValue) {
+  return state.specialHours.find((entry) => entry.special_date === dateValue) || null;
+}
+
+function findWorkingHoursForDate(dateValue) {
+  const specialDay = findSpecialHoursForDate(dateValue);
+  const regularDay = findRegularWorkingHoursForDate(dateValue);
+
+  if (!specialDay) {
+    return regularDay;
+  }
+
+  return {
+    id: specialDay.id,
+    day_of_week: regularDay?.day_of_week ?? new Date(`${dateValue}T00:00:00`).getDay(),
+    day_label: regularDay?.day_label || "יום מיוחד",
+    opens_at: specialDay.is_closed ? null : specialDay.opens_at,
+    closes_at: specialDay.is_closed ? null : specialDay.closes_at,
+    slot_interval_minutes: Number(specialDay.slot_interval_minutes || regularDay?.slot_interval_minutes || 30),
+    is_closed: Boolean(specialDay.is_closed),
+    is_special: true,
+    note: specialDay.note || ""
+  };
 }
 
 function isPastDate(dateValue) {
@@ -621,6 +966,10 @@ function bookingOverlaps(booking, startMinutes, durationMinutes) {
 
 function getActiveBookingsForDate(dateValue) {
   return state.bookings.filter((booking) => booking.booking_date === dateValue && ["pending", "approved"].includes(booking.status));
+}
+
+function isSlotBlocked(dateValue, timeValue) {
+  return state.blockedSlots.some((slot) => slot.blocked_date === dateValue && slot.blocked_time === timeValue);
 }
 
 function getAssignableStaffIds(dateValue, startMinutes, durationMinutes) {
@@ -647,6 +996,10 @@ function getAvailableSlots(dateValue, serviceId = uiState.selectedServiceId, sta
     const slotTime = formatMinutesToTime(start);
 
     if (dateValue === todayDate() && isPastTime(dateValue, slotTime)) {
+      continue;
+    }
+
+    if (isSlotBlocked(dateValue, slotTime)) {
       continue;
     }
 
@@ -716,12 +1069,13 @@ function buildSellerCalendarDays(monthDate) {
     const hasBookings = state.bookings.some(
       (booking) => booking.booking_date === value && booking.status !== "cancelled"
     );
+    const hasSpecialHours = state.specialHours.some((entry) => entry.special_date === value);
 
     return {
       value,
       dayNumber: date.getDate(),
       isCurrentMonth: date.getMonth() === monthDate.getMonth(),
-      hasBookings
+      hasBookings: hasBookings || hasSpecialHours
     };
   });
 }
@@ -806,6 +1160,7 @@ function renderTimeOptions() {
 
 function renderDetailsForm() {
   const currentCustomer = getCurrentCustomer();
+  const sourceBooking = getReplacementSourceBooking();
   const fullName = currentCustomer
     ? [currentCustomer.firstName, currentCustomer.lastName].filter(Boolean).join(" ")
     : "";
@@ -813,58 +1168,128 @@ function renderDetailsForm() {
   bookingForm.elements.fullName.value = fullName;
   bookingForm.elements.phone.value = currentCustomer?.phone || "";
 
-  detailsNotice.textContent = "מלאי שם וטלפון כדי לאשר את התור.";
+  const isLoggedIn = session.role === "customer";
+  if (isLoggedIn) {
+    detailsNotice.textContent = uiState.replacementBookingId
+      ? "את משנה עכשיו תור קיים. בקשת השינוי תישלח לאישור, והתור הישן יישאר שמור עד שבעלת העסק תאשר את התור החדש."
+      : "הפרטים נמשכו מהחשבון שלך. אפשר לעדכן אותם לפני אישור.";
+  } else {
+    detailsNotice.textContent = "כדי לאשר תור צריך להתחבר כלקוחה. בלי התחברות אי אפשר לשמור הזמנה.";
+  }
+
+  bookingSubmitButton.textContent = sourceBooking ? "שליחת שינוי תור" : "קבע תור";
 
   Array.from(bookingForm.elements).forEach((element) => {
     if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLButtonElement)) {
       return;
     }
-    element.disabled = false;
-  });
 
+    if (element.type === "submit") {
+      element.disabled = !isLoggedIn;
+    } else {
+      element.disabled = !isLoggedIn;
+    }
+  });
 }
 
 function renderCustomerBookings() {
   if (session.role !== "customer") {
+    updateCustomerBookingsFilterUi({
+      active: [],
+      completed: [],
+      cancelled: []
+    });
     myBookingsList.innerHTML = '<div class="notice-box">התחברי כלקוחה כדי לראות את התורים שלך.</div>';
     return;
   }
 
-  const bookings = state.bookings
-    .filter((booking) => isSamePhone(booking.customer_phone, session.customerPhone))
+  const bookings = getCustomerBookingsForSession()
     .sort((a, b) => `${a.booking_date} ${a.booking_time}`.localeCompare(`${b.booking_date} ${b.booking_time}`));
 
   if (!bookings.length) {
+    updateCustomerBookingsFilterUi({
+      active: [],
+      completed: [],
+      cancelled: []
+    });
     myBookingsList.innerHTML = '<div class="notice-box">עדיין אין תורים על החשבון הזה.</div>';
     return;
   }
 
-  myBookingsList.innerHTML = bookings
-    .map((booking) => `
-      <article class="booking-card status-card-${booking.status}">
-        <div class="booking-card-head">
-          <strong>${booking.service_name}</strong>
-          <span class="status-pill status-${booking.status}">${formatStatus(booking.status)}</span>
-        </div>
-        <div class="booking-meta">
-          <span>${formatDisplayDate(booking.booking_date)}</span>
-          <span>${booking.booking_time}</span>
-          <span>${booking.staff_name}</span>
-        </div>
-        ${booking.notes ? `<div class="booking-note">הערה: ${booking.notes}</div>` : ""}
-        ${
-          ["pending", "approved"].includes(booking.status)
-            ? `
-              <div class="booking-card-actions">
-                <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
-                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
-                <button class="danger-button cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
-              </div>
-            `
-            : ""
-        }
-      </article>
-    `)
+  const groupedBookings = {
+    active: [],
+    completed: [],
+    cancelled: []
+  };
+
+  bookings.forEach((booking) => {
+    groupedBookings[getCustomerBookingBucket(booking)].push(booking);
+  });
+
+  groupedBookings.completed.sort((a, b) => `${b.booking_date} ${b.booking_time}`.localeCompare(`${a.booking_date} ${a.booking_time}`));
+  groupedBookings.cancelled.sort((a, b) => `${b.booking_date} ${b.booking_time}`.localeCompare(`${a.booking_date} ${a.booking_time}`));
+
+  updateCustomerBookingsFilterUi(groupedBookings);
+
+  const visibleBookings = groupedBookings[uiState.customerBookingsView] || [];
+  if (!visibleBookings.length) {
+    myBookingsList.innerHTML = `<div class="notice-box">${getCustomerEmptyMessage(uiState.customerBookingsView)}</div>`;
+    return;
+  }
+
+  myBookingsList.innerHTML = visibleBookings
+    .map((booking) => {
+      const presentation = getCustomerBookingPresentation(booking);
+      const pendingChangeRequest = findPendingChangeRequestForBooking(booking.id);
+      const originalBooking = booking.replaces_booking_id ? findBookingById(booking.replaces_booking_id) : null;
+      const canChangeThisBooking = ["pending", "approved"].includes(booking.status) && !booking.replaces_booking_id && !pendingChangeRequest;
+
+      return `
+        <article class="booking-card status-card-${presentation.statusClass}">
+          <div class="booking-card-head">
+            <strong>${booking.service_name}</strong>
+            <span class="status-pill status-${presentation.statusClass}">${presentation.statusLabel}</span>
+          </div>
+          <div class="booking-meta">
+            <span>${formatDisplayDate(booking.booking_date)}</span>
+            <span>${booking.booking_time}</span>
+            <span>${booking.staff_name}</span>
+          </div>
+          ${booking.notes ? `<div class="booking-note">הערה: ${booking.notes}</div>` : ""}
+          ${
+            pendingChangeRequest
+              ? `<div class="change-request-strip">יש כרגע בקשת שינוי פתוחה לתאריך ${formatDisplayDate(pendingChangeRequest.booking_date)} בשעה ${pendingChangeRequest.booking_time}. התור הישן נשאר שמור עד לאישור.</div>`
+              : ""
+          }
+          ${
+            originalBooking
+              ? `<div class="change-request-strip">זו בקשת שינוי עבור התור המקורי של ${formatDisplayDate(originalBooking.booking_date)} בשעה ${originalBooking.booking_time}.</div>`
+              : ""
+          }
+          ${
+            presentation.bucket === "active"
+              ? `
+                <div class="booking-card-actions">
+                  <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                  ${canChangeThisBooking ? `<button class="ghost-button replace-booking-button" type="button" data-booking-id="${booking.id}">שינוי תור</button>` : ""}
+                  <button class="danger-button cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול</button>
+                </div>
+              `
+              : presentation.bucket === "completed"
+                ? `
+                  <div class="booking-card-actions">
+                    <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                  </div>
+                `
+                : `
+                  <div class="booking-card-actions">
+                    <button class="ghost-button hide-cancelled-booking-button" type="button" data-booking-id="${booking.id}">מחיקה מהרשימה</button>
+                  </div>
+                `
+          }
+        </article>
+      `;
+    })
     .join("");
 }
 
@@ -927,8 +1352,8 @@ function renderSellerCalendar() {
           ["pending", "approved"].includes(booking.status)
             ? `
               <div class="booking-card-actions">
-                <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
-                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
+                <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                <button class="danger-button seller-cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
               </div>
             `
             : ""
@@ -965,15 +1390,15 @@ function renderSellerBookings() {
               <div class="seller-actions">
                 <button class="primary-button approve-booking-button" type="button" data-booking-id="${booking.id}">אישור תור</button>
                 <button class="danger-button reject-booking-button" type="button" data-booking-id="${booking.id}">דחיית תור</button>
-                <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
-                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
+                <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                <button class="danger-button seller-cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
               </div>
             `
             : ["approved"].includes(booking.status)
               ? `
                 <div class="seller-actions">
-                  <button class="ghost-button google-calendar-button" type="button" data-booking-id="${booking.id}">Google Calendar</button>
-                <button class="ghost-button ics-calendar-button" type="button" data-booking-id="${booking.id}">הוספה ליומן הפרטי</button>
+                  <button class="ghost-button calendar-choice-button" type="button" data-booking-id="${booking.id}">הוספה ליומן</button>
+                  <button class="danger-button seller-cancel-booking-button" type="button" data-booking-id="${booking.id}">ביטול תור</button>
                 </div>
               `
               : ""
@@ -1056,6 +1481,7 @@ function updateSessionUi() {
 function rerenderAll() {
   renderBusiness();
   renderWizardSteps();
+  renderChangeModeBanner();
   renderServices();
   renderStaff();
   renderSelectedSummary();
@@ -1132,7 +1558,8 @@ function updateCurrentCustomer(fullName, phone) {
   customer.firstName = nameParts.firstName;
   customer.lastName = nameParts.lastName;
   customer.phone = phone;
-  session.customerPhone = phone;
+  session.customerPhone = normalizePhoneNumber(phone);
+  rememberCustomerSession(session.customerPhone);
 }
 
 function resolveAssignedStaff(dateValue, timeValue, service) {
@@ -1148,32 +1575,70 @@ function resetBookingSelection() {
   uiState.selectedDate = "";
   uiState.selectedTime = "";
   uiState.selectedMonthKey = monthKey(new Date());
+  clearReplacementBooking();
   showWizardStep(1);
 }
 
 openCustomerLogin.addEventListener("click", () => openAuthModal("customer"));
-openSellerLogin.addEventListener("click", () => openAuthModal("seller"));
+openSellerLogin.addEventListener("click", () => {
+  if (isSellerRemembered()) {
+    rememberSellerSession();
+    sessionStorage.setItem(SELLER_SESSION_KEY, "1");
+    window.location.href = "owner.html";
+    return;
+  }
+
+  openAuthModal("seller");
+});
 closeModal.addEventListener("click", closeAuthModal);
 
 logoutButton.addEventListener("click", () => {
   clearRejectUndo(false);
+  clearReplacementBooking();
+  closeCalendarChoice();
+  clearRememberedCustomerSession();
   session.role = null;
   session.customerPhone = null;
+  uiState.customerBookingsView = "active";
   rerenderAll();
 });
 
-bookingSuccessCalendarButton.addEventListener("click", () => {
-  const booking = findBookingById(bookingSuccessCalendarButton.dataset.bookingId);
-  openGoogleCalendarForBooking(booking);
+cancelChangeModeButton.addEventListener("click", () => {
+  clearReplacementBooking();
+  hideBookingSuccess();
+  rerenderAll();
+  goToStep(1);
 });
 
-bookingSuccessIcsButton.addEventListener("click", () => {
-  const booking = findBookingById(bookingSuccessIcsButton.dataset.bookingId);
-  downloadIcsForBooking(booking);
+bookingSuccessCalendarButton.addEventListener("click", () => {
+  openCalendarChoiceModal(bookingSuccessCalendarButton.dataset.bookingId);
+});
+
+closeCalendarChoiceModal.addEventListener("click", closeCalendarChoice);
+cancelCalendarChoiceButton.addEventListener("click", closeCalendarChoice);
+
+deviceCalendarButton.addEventListener("click", () => {
+  downloadDeviceCalendar(findBookingById(uiState.calendarChoiceBookingId));
+  closeCalendarChoice();
+});
+
+googleCalendarButton.addEventListener("click", () => {
+  openGoogleCalendarForBooking(findBookingById(uiState.calendarChoiceBookingId));
+  closeCalendarChoice();
 });
 
 modalTabs.forEach((tab) => {
   tab.addEventListener("click", () => showAuthTab(tab.dataset.authTab));
+});
+
+customerBookingsFilters.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-booking-view]");
+  if (!button) {
+    return;
+  }
+
+  uiState.customerBookingsView = button.dataset.bookingView;
+  renderCustomerBookings();
 });
 
 servicesCategories.addEventListener("click", (event) => {
@@ -1298,7 +1763,7 @@ customerLoginForm.addEventListener("submit", (event) => {
   const existingUser = state.users.find((user) => isSamePhone(user.phone, normalizedPhone));
   if (existingUser) {
     if (existingUser.password !== password) {
-      alert("הטלפון או הסיסמה לא נכונים.");
+      alert("הסיסמה לא טובה.");
       return;
     }
     existingUser.firstName = firstName || existingUser.firstName;
@@ -1310,6 +1775,8 @@ customerLoginForm.addEventListener("submit", (event) => {
 
   session.role = "customer";
   session.customerPhone = normalizedPhone;
+  uiState.customerBookingsView = "active";
+  rememberCustomerSession(normalizedPhone);
   saveState();
   closeAuthModal();
   rerenderAll();
@@ -1321,11 +1788,17 @@ sellerLoginForm.addEventListener("submit", (event) => {
   const username = String(formData.get("username")).trim();
   const password = String(formData.get("password"));
 
-  if (username !== state.sellerCredentials.username || password !== state.sellerCredentials.password) {
-    alert("שם המשתמש או הסיסמה שגויים.");
+  if (username !== state.sellerCredentials.username) {
+    alert("שם המשתמש לא טוב.");
     return;
   }
 
+  if (password !== state.sellerCredentials.password) {
+    alert("הסיסמה לא טובה.");
+    return;
+  }
+
+  rememberSellerSession();
   sessionStorage.setItem(SELLER_SESSION_KEY, "1");
   window.location.href = "owner.html";
 });
@@ -1333,8 +1806,10 @@ sellerLoginForm.addEventListener("submit", (event) => {
 bookingForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  // Login no longer required - customer can book by entering name+phone
-
+  if (session.role !== "customer") {
+    openAuthModal("customer");
+    return;
+  }
 
   if (!ensureServiceSelected() || !ensureStaffSelected() || !ensureScheduleSelected()) {
     return;
@@ -1362,6 +1837,7 @@ bookingForm.addEventListener("submit", (event) => {
   updateCurrentCustomer(fullName, phone);
 
   const nameParts = parseFullName(fullName);
+  const replacedBookingId = uiState.replacementBookingId;
   const newBooking = {
     id: `booking-${Date.now()}`,
     service_id: service.id,
@@ -1375,10 +1851,12 @@ bookingForm.addEventListener("submit", (event) => {
     booking_date: uiState.selectedDate,
     booking_time: uiState.selectedTime,
     duration_minutes: service.duration,
-    status: "pending"
+    status: "pending",
+    replaces_booking_id: replacedBookingId || null
   };
 
   state.bookings.push(newBooking);
+  clearReplacementBooking();
   saveState();
   bookingForm.elements.notes.value = "";
   rerenderAll();
@@ -1424,7 +1902,7 @@ sellerCredentialsForm.addEventListener("submit", (event) => {
 addServiceButton.addEventListener("click", () => {
   state.services.push({
     id: `service-${Date.now()}`,
-    category: "טיפולי ידיים",
+    category: "קטגוריה ראשית",
     name: "שירות חדש",
     price: 0,
     duration: 30
@@ -1539,17 +2017,36 @@ sellerCalendarNextButton.addEventListener("click", () => {
 });
 
 sellerCalendarList.addEventListener("click", (event) => {
-  const target = event.target.closest(".google-calendar-button, .ics-calendar-button");
+  const target = event.target.closest("button");
   if (!target) {
     return;
   }
 
   const booking = findBookingById(target.dataset.bookingId);
-  if (target.classList.contains("ics-calendar-button")) {
-    downloadIcsForBooking(booking);
-  } else {
-    openGoogleCalendarForBooking(booking);
+  if (!booking) {
+    return;
   }
+
+  if (target.classList.contains("calendar-choice-button")) {
+    openCalendarChoiceModal(booking.id);
+    return;
+  }
+
+  if (!target.classList.contains("seller-cancel-booking-button")) {
+    return;
+  }
+
+  if (!["pending", "approved"].includes(booking.status)) {
+    return;
+  }
+
+  if (!window.confirm("האם לבטל את התור הזה?")) {
+    return;
+  }
+
+  booking.status = "cancelled";
+  saveState();
+  rerenderAll();
 });
 
 sellerBookingsList.addEventListener("click", (event) => {
@@ -1568,13 +2065,24 @@ sellerBookingsList.addEventListener("click", (event) => {
     return;
   }
 
-  if (target.classList.contains("google-calendar-button")) {
-    openGoogleCalendarForBooking(booking);
+  if (target.classList.contains("calendar-choice-button")) {
+    openCalendarChoiceModal(booking.id);
     return;
   }
 
-  if (target.classList.contains("ics-calendar-button")) {
-    downloadIcsForBooking(booking);
+  if (target.classList.contains("seller-cancel-booking-button")) {
+    if (!["pending", "approved"].includes(booking.status)) {
+      return;
+    }
+
+    if (!window.confirm("האם לבטל את התור הזה?")) {
+      return;
+    }
+
+    clearRejectUndo(false);
+    booking.status = "cancelled";
+    saveState();
+    rerenderAll();
     return;
   }
 
@@ -1589,6 +2097,7 @@ sellerBookingsList.addEventListener("click", (event) => {
   if (target.classList.contains("approve-booking-button")) {
     clearRejectUndo(false);
     booking.status = "approved";
+    finalizeApprovedChangeRequest(booking);
   }
 
   if (target.classList.contains("reject-booking-button")) {
@@ -1607,13 +2116,46 @@ myBookingsList.addEventListener("click", (event) => {
     return;
   }
 
-  if (target.classList.contains("google-calendar-button")) {
-    openGoogleCalendarForBooking(findBookingById(target.dataset.bookingId));
+  if (target.classList.contains("calendar-choice-button")) {
+    openCalendarChoiceModal(target.dataset.bookingId);
     return;
   }
 
-  if (target.classList.contains("ics-calendar-button")) {
-    downloadIcsForBooking(findBookingById(target.dataset.bookingId));
+  if (target.classList.contains("replace-booking-button")) {
+    const booking = findBookingById(target.dataset.bookingId);
+    if (!booking || !isSamePhone(booking.customer_phone, session.customerPhone) || !["pending", "approved"].includes(booking.status)) {
+      return;
+    }
+
+    uiState.selectedServiceId = booking.service_id;
+    uiState.selectedStaffId = booking.staff_id;
+    uiState.selectedDate = "";
+    uiState.selectedTime = "";
+    uiState.selectedMonthKey = monthKey(new Date());
+    uiState.replacementBookingId = booking.id;
+    hideBookingSuccess();
+    rerenderAll();
+    goToStep(3);
+    return;
+  }
+
+  if (target.classList.contains("hide-cancelled-booking-button")) {
+    const booking = findBookingById(target.dataset.bookingId);
+    if (!booking || !isSamePhone(booking.customer_phone, session.customerPhone)) {
+      return;
+    }
+
+    if (getCustomerBookingBucket(booking) !== "cancelled") {
+      return;
+    }
+
+    if (!window.confirm("להסתיר את התור הזה מהרשימה שלך?")) {
+      return;
+    }
+
+    booking.hidden_for_customer = true;
+    saveState();
+    rerenderAll();
     return;
   }
 
@@ -1640,5 +2182,6 @@ myBookingsList.addEventListener("click", (event) => {
   rerenderAll();
 });
 
+restoreRememberedCustomerSession();
 rerenderAll();
 showWizardStep(1);
