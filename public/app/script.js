@@ -259,11 +259,11 @@ function normalizeBusiness(business) {
     normalized.description = DEFAULT_DATA.business.description;
   }
 
-  if (!normalized.address || normalized.address === "כתובת העסק" || normalized.address === "נחל צלמון 12") {
+  if (!normalized.address || normalized.address === "כתובת העסק") {
     normalized.address = DEFAULT_DATA.business.address;
   }
 
-  if (!normalized.phone || normalized.phone === "058-560-9500") {
+  if (!normalized.phone) {
     normalized.phone = DEFAULT_DATA.business.phone;
   }
 
