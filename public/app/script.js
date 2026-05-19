@@ -14,8 +14,8 @@ const DEFAULT_DATA = {
   business: {
     name: "שם העסק שלך",
     description: "כתבי כאן תיאור קצר על העסק שלך.",
-    address: "כתובת העסק",
-    phone: "",
+    address: "נחל צלמון 12",
+    phone: "058-560-9500",
     instagram_url: "",
     cover_image: "",
     profile_image: ""
@@ -259,11 +259,11 @@ function normalizeBusiness(business) {
     normalized.description = DEFAULT_DATA.business.description;
   }
 
-  if (!normalized.address || normalized.address === "כתובת העסק" || normalized.address === "נחל צלמון 12") {
+  if (!normalized.address || normalized.address === "כתובת העסק") {
     normalized.address = DEFAULT_DATA.business.address;
   }
 
-  if (!normalized.phone || normalized.phone === "058-560-9500") {
+  if (!normalized.phone) {
     normalized.phone = DEFAULT_DATA.business.phone;
   }
 
