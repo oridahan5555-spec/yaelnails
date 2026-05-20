@@ -25,9 +25,12 @@ const DEFAULT_DATA = {
     password: "1234"
   },
   services: [
-    { id: "service-1", category: "קטגוריה ראשית", name: "שירות לדוגמה 1", price: 150, duration: 60 },
-    { id: "service-2", category: "קטגוריה ראשית", name: "שירות לדוגמה 2", price: 220, duration: 90 },
-    { id: "service-3", category: "קטגוריה נוספת", name: "שירות לדוגמה 3", price: 80, duration: 30 }
+    { id: "service-1", category: "בנייה ומילוי", name: "בנייה בטיפס הפוך", price: 230, duration: 120 },
+    { id: "service-2", category: "בנייה ומילוי", name: "השלמה", price: 10, duration: 60 },
+    { id: "service-3", category: "לק ג'ל", name: "לק ג'ל + מבנה אנטומי", price: 110, duration: 75 },
+    { id: "service-4", category: "לק ג'ל", name: "הסרת לק ג'ל", price: 20, duration: 20 },
+    { id: "service-5", category: "תוספות", name: "ציור (לציפורן)", price: 10, duration: 10 },
+    { id: "service-6", category: "תוספות", name: "פרנץ'", price: 10, duration: 10 }
   ],
   staff: [DEFAULT_OWNER_STAFF],
   workingHours: [
@@ -1419,17 +1422,25 @@ function renderSellerBookings() {
 }
 
 function renderEditors() {
-  servicesEditor.innerHTML = state.services
-    .map((service) => `
+  servicesEditor.innerHTML = `
+    <div class="editor-row editor-row-labels services-editor-labels" aria-hidden="true">
+      <span>שם השירות</span>
+      <span>קטגוריה</span>
+      <span>מחיר (₪)</span>
+      <span>משך בדקות</span>
+      <span></span>
+    </div>
+    ${state.services
+      .map((service) => `
       <div class="editor-row" data-service-id="${service.id}">
-        <input type="text" value="${service.name}" data-service-field="name">
-        <input type="text" value="${service.category}" data-service-field="category">
-        <input type="number" min="0" value="${service.price}" data-service-field="price">
-        <input type="number" min="5" step="5" value="${service.duration}" data-service-field="duration">
+        <input type="text" value="${service.name}" data-service-field="name" placeholder="שם השירות">
+        <input type="text" value="${service.category}" data-service-field="category" placeholder="קטגוריה">
+        <input type="number" min="0" value="${service.price}" data-service-field="price" placeholder="מחיר בש״ח">
+        <input type="number" min="5" step="5" value="${service.duration}" data-service-field="duration" placeholder="משך בדקות">
         <button class="danger-button remove-service-button" type="button">מחיקה</button>
       </div>
     `)
-    .join("");
+      .join("")}`;
 
   hoursEditor.innerHTML = [...state.workingHours]
     ? `
