@@ -1183,7 +1183,8 @@ resetBusinessTemplateButton.addEventListener("click", () => {
   }
 
   resetStateToDefaultTemplate();
-  closeCalendarChoice();
+  window.BookingCredentials.resetToDefaults();
+  state.sellerCredentialsUsername = window.BookingCredentials.DEFAULTS.username;
   clearRememberedSessions();
   ownerLoginForm.reset();
   showOwnerLogin();
@@ -1687,10 +1688,20 @@ hoursForm.addEventListener("submit", (event) => {
   rerenderAll();
 });
 
-if (isSellerRemembered()) {
-  rememberSellerSession();
-  sessionStorage.setItem(SELLER_SESSION_KEY, "1");
-  showOwnerLayout();
-} else {
+window.BookingCredentials.ensureInitialized().then((rec) => {
+  state.sellerCredentialsUsername = rec.username;
+  if (state.sellerCredentials) {
+    delete state.sellerCredentials.password;
+    state.sellerCredentials.username = rec.username;
+  }
+  if (isSellerRemembered()) {
+    rememberSellerSession();
+    sessionStorage.setItem(SELLER_SESSION_KEY, "1");
+    showOwnerLayout();
+  } else {
+    showOwnerLogin();
+  }
+}).catch((err) => {
+  console.error("Failed to initialize credentials", err);
   showOwnerLogin();
-}
+});
