@@ -1185,6 +1185,7 @@ resetBusinessTemplateButton.addEventListener("click", () => {
   resetStateToDefaultTemplate();
   window.BookingCredentials.resetToDefaults();
   state.sellerCredentialsUsername = window.BookingCredentials.DEFAULTS.username;
+  closeCalendarChoice();
   clearRememberedSessions();
   ownerLoginForm.reset();
   showOwnerLogin();
