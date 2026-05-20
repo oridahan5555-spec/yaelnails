@@ -263,13 +263,18 @@
 
         <form id="sellerCredentialsForm" class="admin-card">
           <h3>כניסת בעלת העסק</h3>
+          <p class="admin-helper">הסיסמה נשמרת מוצפנת במכשיר בלבד (PBKDF2 + Salt).</p>
           <label class="field">
             <span>שם משתמש</span>
-            <input type="text" name="username" required>
+            <input type="text" name="username" autocomplete="username" required>
+          </label>
+          <label class="field">
+            <span>סיסמה נוכחית</span>
+            <input type="password" name="currentPassword" autocomplete="current-password" required>
           </label>
           <label class="field">
             <span>סיסמה חדשה</span>
-            <input type="password" name="password" placeholder="השאירי ריק כדי לא לשנות">
+            <input type="password" name="password" autocomplete="new-password" placeholder="השאירי ריק כדי לא לשנות">
           </label>
           <button class="primary-button" type="submit">שמירת פרטי התחברות</button>
         </form>
