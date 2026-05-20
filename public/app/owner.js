@@ -958,8 +958,11 @@ function renderEditors() {
   businessForm.elements.profileImageFile.value = "";
   renderBusinessImagePreviews();
 
-  sellerCredentialsForm.elements.username.value = state.sellerCredentials.username;
+  sellerCredentialsForm.elements.username.value = state.sellerCredentialsUsername || (state.sellerCredentials && state.sellerCredentials.username) || "admin";
   sellerCredentialsForm.elements.password.value = "";
+  if (sellerCredentialsForm.elements.currentPassword) {
+    sellerCredentialsForm.elements.currentPassword.value = "";
+  }
 
   servicesEditor.innerHTML = state.services
     .map((service) => `
@@ -1140,19 +1143,21 @@ function showOwnerLogin() {
   ownerLoginGate.classList.remove("is-hidden");
 }
 
-ownerLoginForm.addEventListener("submit", (event) => {
+ownerLoginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(ownerLoginForm);
-  const username = String(formData.get("username")).trim();
-  const password = String(formData.get("password"));
+  const username = String(formData.get("username") || "").trim();
+  const password = String(formData.get("password") || "");
 
-  if (username !== state.sellerCredentials.username) {
-    alert("שם המשתמש לא טוב.");
-    return;
-  }
-
-  if (password !== state.sellerCredentials.password) {
-    alert("הסיסמה לא טובה.");
+  try {
+    const ok = await window.BookingCredentials.verify(username, password);
+    if (!ok) {
+      alert("שם המשתמש או הסיסמה לא נכונים.");
+      return;
+    }
+  } catch (err) {
+    console.error(err);
+    alert("שגיאה באימות הסיסמה. נסי שוב.");
     return;
   }
 
@@ -1178,6 +1183,8 @@ resetBusinessTemplateButton.addEventListener("click", () => {
   }
 
   resetStateToDefaultTemplate();
+  window.BookingCredentials.resetToDefaults();
+  state.sellerCredentialsUsername = window.BookingCredentials.DEFAULTS.username;
   closeCalendarChoice();
   clearRememberedSessions();
   ownerLoginForm.reset();
@@ -1555,24 +1562,45 @@ businessForm.addEventListener("submit", async (event) => {
   rerenderAll();
 });
 
-sellerCredentialsForm.addEventListener("submit", (event) => {
+sellerCredentialsForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const username = String(sellerCredentialsForm.elements.username.value).trim();
-  const password = String(sellerCredentialsForm.elements.password.value);
+  const currentPassword = String(sellerCredentialsForm.elements.currentPassword.value);
+  const newPassword = String(sellerCredentialsForm.elements.password.value);
 
   if (!username) {
     alert("שם משתמש לא יכול להיות ריק.");
     return;
   }
-
-  state.sellerCredentials.username = username;
-  if (password.trim()) {
-    state.sellerCredentials.password = password;
+  if (!currentPassword) {
+    alert("צריך להזין את הסיסמה הנוכחית כדי לשמור שינויים.");
+    return;
   }
 
-  saveState();
-  sellerCredentialsForm.elements.password.value = "";
-  rerenderAll();
+  try {
+    const updated = await window.BookingCredentials.updateCredentials({
+      currentPassword,
+      newUsername: username,
+      newPassword
+    });
+    state.sellerCredentialsUsername = updated.username;
+    if (state.sellerCredentials) {
+      delete state.sellerCredentials.password;
+      state.sellerCredentials.username = updated.username;
+    }
+    saveState();
+    sellerCredentialsForm.elements.password.value = "";
+    sellerCredentialsForm.elements.currentPassword.value = "";
+    alert("פרטי ההתחברות עודכנו בהצלחה.");
+    rerenderAll();
+  } catch (err) {
+    if (err && err.code === "INVALID_CURRENT_PASSWORD") {
+      alert("הסיסמה הנוכחית לא נכונה.");
+    } else {
+      console.error(err);
+      alert("לא הצלחנו לעדכן את פרטי ההתחברות. נסי שוב.");
+    }
+  }
 });
 
 addServiceButton.addEventListener("click", () => {
@@ -1661,10 +1689,20 @@ hoursForm.addEventListener("submit", (event) => {
   rerenderAll();
 });
 
-if (isSellerRemembered()) {
-  rememberSellerSession();
-  sessionStorage.setItem(SELLER_SESSION_KEY, "1");
-  showOwnerLayout();
-} else {
+window.BookingCredentials.ensureInitialized().then((rec) => {
+  state.sellerCredentialsUsername = rec.username;
+  if (state.sellerCredentials) {
+    delete state.sellerCredentials.password;
+    state.sellerCredentials.username = rec.username;
+  }
+  if (isSellerRemembered()) {
+    rememberSellerSession();
+    sessionStorage.setItem(SELLER_SESSION_KEY, "1");
+    showOwnerLayout();
+  } else {
+    showOwnerLogin();
+  }
+}).catch((err) => {
+  console.error("Failed to initialize credentials", err);
   showOwnerLogin();
-}
+});

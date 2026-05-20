@@ -157,13 +157,18 @@
 
           <form id="sellerCredentialsForm" class="admin-card owner-section-anchor" id="ownerAccessSection">
             <h3>פרטי כניסה לניהול</h3>
+            <p class="admin-helper">הסיסמה נשמרת מוצפנת במכשיר בלבד (PBKDF2 + Salt).</p>
             <label class="field">
               <span>שם משתמש</span>
-              <input type="text" name="username" required>
+              <input type="text" name="username" autocomplete="username" required>
+            </label>
+            <label class="field">
+              <span>סיסמה נוכחית</span>
+              <input type="password" name="currentPassword" autocomplete="current-password" required>
             </label>
             <label class="field">
               <span>סיסמה חדשה</span>
-              <input type="password" name="password" placeholder="אם לא רוצים לשנות, משאירים ריק">
+              <input type="password" name="password" autocomplete="new-password" placeholder="אם לא רוצים לשנות, משאירים ריק">
             </label>
             <button class="primary-button" type="submit">שמירת פרטי התחברות</button>
           </form>
@@ -287,6 +292,7 @@
     </div>
   </div>
 
+  <script src="credentials.js"></script>
   <script src="owner.js"></script>
 </body>
 </html>
