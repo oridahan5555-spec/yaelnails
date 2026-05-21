@@ -865,7 +865,7 @@ function renderSellerCalendar() {
           <span>${formatDisplayDate(slot.blocked_date)}</span>
           <span>הזמן הזה לא מוצג ללקוחות</span>
         </div>
-        ${slot.note ? `<div class="booking-note">סיבה: ${slot.note}</div>` : ""}
+        ${slot.note ? `<div class="booking-note">סיבה: ${escapeHtml(slot.note)}</div>` : ""}
         <div class="booking-card-actions">
           <button class="ghost-button unblock-slot-button" type="button" data-blocked-slot-id="${slot.id}">הסרת חסימה</button>
         </div>
