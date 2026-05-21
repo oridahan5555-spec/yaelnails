@@ -849,7 +849,7 @@ function renderSellerCalendar() {
           <span>${specialDay.is_closed ? "לא ניתן לקבוע תורים ביום הזה" : `${specialDay.opens_at} - ${specialDay.closes_at}`}</span>
           <span>${specialDay.is_closed ? "היום הזה סגור באופן מיוחד" : `כל ${specialDay.slot_interval_minutes} דקות`}</span>
         </div>
-        ${specialDay.note ? `<div class="booking-note">הערה: ${specialDay.note}</div>` : ""}
+        ${specialDay.note ? `<div class="booking-note">הערה: ${escapeHtml(specialDay.note)}</div>` : ""}
       </article>
     `
     : "";
