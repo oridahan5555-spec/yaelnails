@@ -3,6 +3,16 @@ const SELLER_SESSION_KEY = "booking_app_seller_session_v1";
 const CUSTOMER_SESSION_KEY = "booking_app_customer_session_v1";
 const REJECT_UNDO_WINDOW_MS = 5000;
 
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const DEFAULT_OWNER_STAFF = {
   id: "staff-owner",
   name: "בעלת העסק",
@@ -839,7 +849,7 @@ function renderSellerCalendar() {
           <span>${specialDay.is_closed ? "לא ניתן לקבוע תורים ביום הזה" : `${specialDay.opens_at} - ${specialDay.closes_at}`}</span>
           <span>${specialDay.is_closed ? "היום הזה סגור באופן מיוחד" : `כל ${specialDay.slot_interval_minutes} דקות`}</span>
         </div>
-        ${specialDay.note ? `<div class="booking-note">הערה: ${specialDay.note}</div>` : ""}
+        ${specialDay.note ? `<div class="booking-note">הערה: ${escapeHtml(specialDay.note)}</div>` : ""}
       </article>
     `
     : "";
@@ -855,7 +865,7 @@ function renderSellerCalendar() {
           <span>${formatDisplayDate(slot.blocked_date)}</span>
           <span>הזמן הזה לא מוצג ללקוחות</span>
         </div>
-        ${slot.note ? `<div class="booking-note">סיבה: ${slot.note}</div>` : ""}
+        ${slot.note ? `<div class="booking-note">סיבה: ${escapeHtml(slot.note)}</div>` : ""}
         <div class="booking-card-actions">
           <button class="ghost-button unblock-slot-button" type="button" data-blocked-slot-id="${slot.id}">הסרת חסימה</button>
         </div>
@@ -871,11 +881,11 @@ function renderSellerCalendar() {
           <span class="status-pill status-${booking.status}">${formatStatus(booking.status)}</span>
         </div>
         <div class="booking-meta">
-          <span>${booking.customer_first_name} ${booking.customer_last_name}</span>
-          <span>${booking.service_name}</span>
-          <span>${booking.staff_name}</span>
+          <span>${escapeHtml(booking.customer_first_name)} ${escapeHtml(booking.customer_last_name)}</span>
+          <span>${escapeHtml(booking.service_name)}</span>
+          <span>${escapeHtml(booking.staff_name)}</span>
         </div>
-        ${booking.notes ? `<div class="booking-note">הערה: ${booking.notes}</div>` : ""}
+        ${booking.notes ? `<div class="booking-note">הערה: ${escapeHtml(booking.notes)}</div>` : ""}
         ${
           ["pending", "approved"].includes(booking.status)
             ? `
@@ -904,16 +914,16 @@ function renderSellerBookings() {
     .map((booking) => `
       <article class="booking-card status-card-${booking.status}">
         <div class="booking-card-head">
-          <strong>${booking.customer_first_name} ${booking.customer_last_name}</strong>
+          <strong>${escapeHtml(booking.customer_first_name)} ${escapeHtml(booking.customer_last_name)}</strong>
           <span class="status-pill status-${booking.status}">${formatStatus(booking.status)}</span>
         </div>
         <div class="booking-meta">
-          <span>${booking.service_name}</span>
+          <span>${escapeHtml(booking.service_name)}</span>
           <span>${formatDisplayDate(booking.booking_date)}</span>
           <span>${booking.booking_time}</span>
-          <span>${booking.staff_name}</span>
+          <span>${escapeHtml(booking.staff_name)}</span>
         </div>
-        ${booking.notes ? `<div class="booking-note">הערה: ${booking.notes}</div>` : ""}
+        ${booking.notes ? `<div class="booking-note">הערה: ${escapeHtml(booking.notes)}</div>` : ""}
         ${
           booking.status === "pending"
             ? `
