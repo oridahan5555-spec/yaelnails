@@ -3,6 +3,16 @@ const SELLER_SESSION_KEY = "booking_app_seller_session_v1";
 const CUSTOMER_SESSION_KEY = "booking_app_customer_session_v1";
 const REJECT_UNDO_WINDOW_MS = 5000;
 
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const DEFAULT_OWNER_STAFF = {
   id: "staff-owner",
   name: "בעלת העסק",
