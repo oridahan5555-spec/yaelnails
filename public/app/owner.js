@@ -914,16 +914,16 @@ function renderSellerBookings() {
     .map((booking) => `
       <article class="booking-card status-card-${booking.status}">
         <div class="booking-card-head">
-          <strong>${booking.customer_first_name} ${booking.customer_last_name}</strong>
+          <strong>${escapeHtml(booking.customer_first_name)} ${escapeHtml(booking.customer_last_name)}</strong>
           <span class="status-pill status-${booking.status}">${formatStatus(booking.status)}</span>
         </div>
         <div class="booking-meta">
-          <span>${booking.service_name}</span>
+          <span>${escapeHtml(booking.service_name)}</span>
           <span>${formatDisplayDate(booking.booking_date)}</span>
           <span>${booking.booking_time}</span>
-          <span>${booking.staff_name}</span>
+          <span>${escapeHtml(booking.staff_name)}</span>
         </div>
-        ${booking.notes ? `<div class="booking-note">הערה: ${booking.notes}</div>` : ""}
+        ${booking.notes ? `<div class="booking-note">הערה: ${escapeHtml(booking.notes)}</div>` : ""}
         ${
           booking.status === "pending"
             ? `
