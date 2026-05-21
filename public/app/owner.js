@@ -964,17 +964,26 @@ function renderEditors() {
     sellerCredentialsForm.elements.currentPassword.value = "";
   }
 
-  servicesEditor.innerHTML = state.services
-    .map((service) => `
-      <div class="editor-row" data-service-id="${service.id}">
-        <input type="text" value="${service.name}" data-service-field="name">
-        <input type="text" value="${service.category}" data-service-field="category">
-        <input type="number" min="0" value="${service.price}" data-service-field="price">
-        <input type="number" min="5" step="5" value="${service.duration}" data-service-field="duration">
-        <button class="danger-button remove-service-button" type="button">מחיקה</button>
-      </div>
-    `)
-    .join("");
+  servicesEditor.innerHTML = `
+    <div class="editor-row editor-row-labels services-editor-labels" aria-hidden="true">
+      <span>שם השירות</span>
+      <span>קטגוריה</span>
+      <span>מחיר (₪)</span>
+      <span>משך בדקות</span>
+      <span></span>
+    </div>
+    ${state.services
+      .map((service) => `
+        <div class="editor-row" data-service-id="${service.id}">
+          <input type="text" value="${service.name}" data-service-field="name">
+          <input type="text" value="${service.category}" data-service-field="category">
+          <input type="number" min="0" value="${service.price}" data-service-field="price">
+          <input type="number" min="5" step="5" value="${service.duration}" data-service-field="duration">
+          <button class="danger-button remove-service-button" type="button">מחיקה</button>
+        </div>
+      `)
+      .join("")}
+  `;
 
   hoursEditor.innerHTML = `
     <div class="editor-row editor-row-labels" aria-hidden="true">
