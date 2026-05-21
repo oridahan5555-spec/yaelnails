@@ -881,11 +881,11 @@ function renderSellerCalendar() {
           <span class="status-pill status-${booking.status}">${formatStatus(booking.status)}</span>
         </div>
         <div class="booking-meta">
-          <span>${booking.customer_first_name} ${booking.customer_last_name}</span>
-          <span>${booking.service_name}</span>
-          <span>${booking.staff_name}</span>
+          <span>${escapeHtml(booking.customer_first_name)} ${escapeHtml(booking.customer_last_name)}</span>
+          <span>${escapeHtml(booking.service_name)}</span>
+          <span>${escapeHtml(booking.staff_name)}</span>
         </div>
-        ${booking.notes ? `<div class="booking-note">הערה: ${booking.notes}</div>` : ""}
+        ${booking.notes ? `<div class="booking-note">הערה: ${escapeHtml(booking.notes)}</div>` : ""}
         ${
           ["pending", "approved"].includes(booking.status)
             ? `
